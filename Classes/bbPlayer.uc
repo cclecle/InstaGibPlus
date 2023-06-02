@@ -1,5 +1,13 @@
 class bbPlayer extends TournamentPlayer
 	config(User) abstract;
+	
+struct BetterVector
+{
+	var int X;
+	var int Y;
+	var int Z;
+};
+
 
 var int bReason;
 // Client Config
@@ -64,7 +72,7 @@ var Projectile zzNN_Projectiles[256];
 var vector zzNN_ProjLocations[256];
 var int     zzFRVI, zzNN_FRVI, FRVI_length, zzVRVI, zzNN_VRVI, VRVI_length, zzNN_ProjIndex, NN_ProjLength, zzEdgeCount, zzCheckedCount;
 var rotator zzNN_ViewRot;
-var actor   zzNN_HitActor, zzOldBase;
+var actor   zzNN_HitActor, zzNN_HitActorLast,zzOldBase;
 var Vector  zzNN_HitLoc, zzClientHitNormal, zzClientHitLocation, zzNN_HitDiff, zzNN_HitLocLast, zzNN_HitNormalLast, zzNN_ClientLoc, zzNN_ClientVel;
 var bool    zzbIsWarmingUp, zzbFakeUpdate, zzbForceUpdate, zzbNN_Special, zzbNN_ReleasedFire, zzbNN_ReleasedAltFire;
 var float   zzNN_Accuracy, zzLastStuffUpdate, zzNextTimeTime, zzLastClientErr, zzForceUpdateUntil, zzIgnoreUpdateUntil, zzLastLocDiff, zzSpawnedTime;
@@ -495,7 +503,9 @@ replication
 	reliable if ((Role < ROLE_Authority) && !bClientDemoRecording)
 		xxNN_ProjExplode,
 		xxNN_ReleaseAltFire,
-		xxNN_ReleaseFire;
+		xxNN_ReleaseFire,
+		xxNN_ServerTakeDamage,
+		xxNN_RadiusDamage;
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Functions Client -> Demo
@@ -3222,6 +3232,7 @@ function bool xxWeaponIsNewNet( optional bool bAlt )
 		return false;
 
 	return (Weapon.IsA('NN_ShockRifle')
+		|| Weapon.IsA('NN_ComboShockRifle')
 		|| Weapon.IsA('NN_SuperShockRifle')
 		|| Weapon.IsA('NN_SniperRifle')
 		|| Weapon.IsA('NN_ASMD')
@@ -4482,6 +4493,86 @@ function ServerAddMomentum(vector Momentum) {
 	}
 }
 
+simulated function BetterVector GetBetterVector(Vector SomeVector)
+{
+	local BetterVector Vec;
+
+	Vec.X = int(SomeVector.X);
+	Vec.Y = int(SomeVector.Y);
+	Vec.Z = int(SomeVector.Z);
+	return Vec;
+}
+
+simulated function Vector GetVector(BetterVector SomeVector)
+{
+	local Vector Vec;
+
+	Vec.X = float(SomeVector.X);
+	Vec.Y = float(SomeVector.Y);
+	Vec.Z = float(SomeVector.Z);
+	return Vec;
+}
+
+function NN_HurtRadius( actor ActualSelf, class<Weapon> WeapClass, float DamageAmount, float DamageRadius, name DamageName, float MomentumXfer, vector HitLocation, int ProjIndex, optional bool bNoSelf )
+{
+	local actor Victims, TracedTo;
+	local float damageScale, dist;
+	local vector diff, dir, MoverHitLocation, MoverHitNormal;
+	local Mover M;
+	
+	if( ActualSelf == None || ActualSelf.bHurtEntry )
+		return;
+
+	xxEnableCarcasses();
+	ActualSelf.bHurtEntry = true;
+	foreach VisibleCollidingActors( class 'Actor', Victims, DamageRadius, HitLocation )
+	{
+		log(Victims);
+		if ( Victims != ActualSelf && (!bNoSelf || Victims != Self) )
+		{
+			if (Victims == zzClientTTarget)
+			{
+				zzClientTTarget.TakeDamage(0, Self, HitLocation, 60000.0*vector(ViewRotation), DamageName);
+			}
+			else
+			{
+				diff = Victims.Location - HitLocation;
+				dist = FMax(1,VSize(diff));
+				dir = diff/dist; 
+				damageScale = 1 - FMax(0,(dist - Victims.CollisionRadius)/DamageRadius);
+				xxNN_RadiusDamage
+				(
+					Victims,
+					WeapClass,
+					damageScale * DamageAmount,
+					DamageRadius,
+					ActualSelf.Instigator, 
+					HitLocation,
+					diff,
+					MomentumXfer,
+					DamageName,
+					ProjIndex
+				);
+			}
+		} 
+	}
+	
+	foreach RadiusActors( class 'Mover', M, DamageRadius, HitLocation )
+	{
+		TracedTo = Trace(MoverHitLocation, MoverHitNormal, M.Location, HitLocation, True);
+		dir = MoverHitLocation - HitLocation;
+		dist = FMax(1,VSize(dir));
+		if (TracedTo != M || dist > DamageRadius)
+			continue;
+		dir = dir/dist;
+		damageScale = 1 - FMax(0,(dist - M.CollisionRadius)/DamageRadius);
+		xxNN_ServerTakeDamage( M, WeapClass, damageScale * DamageAmount, ActualSelf.Instigator, HitLocation, GetBetterVector(damageScale * MomentumXfer * dir), DamageName, ProjIndex);
+	}
+	
+	ActualSelf.bHurtEntry = false;
+	xxDisableCarcasses();
+}
+
 simulated function NN_Momentum( Vector momentum, name DamageType )
 {
 	local bool bPreventLockdown;		// Avoid the lockdown effect.
@@ -4741,6 +4832,139 @@ function TakeDamage( int Damage, Pawn InstigatedBy, Vector HitLocation,
 			Destroy();
 	}
 	MakeNoise(1.0);
+}
+
+function xxNN_RadiusDamage( actor Other, class<Weapon> WeapClass, int Damage, float DamageRadius, Pawn InstigatedBy, Vector HitLocation, Vector HitDiff, float MomentumXfer, name damageType, int ProjIndex, optional int Which)
+{
+	local bbPlayer bbP, bbK;
+	local float damageScale, dist;
+	local vector dir, momentum;
+	local Weapon W;
+	local bool bHack;
+	local Projectile Proj;
+	local vector ProjLocation;
+	local int MaxHitError;
+	
+	if (Other == None || xxGarbageLocation(Other))
+		return;
+
+	xxEnableCarcasses();
+	bbP = bbPlayer(Other);
+	if (bbP != None && ProjIndex > -1)
+	{
+		Proj = zzNN_Projectiles[ProjIndex];
+		if (Proj == None)
+			ProjLocation = zzNN_ProjLocations[ProjIndex];
+		else
+			ProjLocation = Proj.Location;
+		//zzNN_ProjLocations[ProjIndex] = vect(0, 0, 0);
+		
+		MaxHitError = zzUTPure.settings.MaxHitError;
+		if (ProjLocation.X == 0 && ProjLocation.Y == 0 && ProjLocation.Z == 0 || VSize(HitLocation - ProjLocation) > MaxHitError || !bbP.xxCloseEnough(HitLocation, DamageRadius))
+			return;
+	}
+	
+	//dir = Other.Location - HitLocation;
+	dist = FMax(1,VSize(HitDiff));
+	dir = HitDiff/dist; 
+	damageScale = 1 - FMax(0,(dist - Other.CollisionRadius)/DamageRadius);
+	
+	HitLocation = Other.Location - 0.5 * (Other.CollisionHeight + Other.CollisionRadius) * dir;
+	momentum = damageScale * MomentumXfer * dir;
+
+	bbK = bbPlayer(InstigatedBy);
+	bHack = bbK != None && WeapClass != None && !bbK.Weapon.IsA(WeapClass.name);
+	if (bHack)
+	{
+		W = bbK.Weapon;
+		bbK.Weapon = Spawn(WeapClass, InstigatedBy);
+	}
+	
+	//if (bbP != None && bbPlayer(InstigatedBy) != None && Which == 1)
+	//	bbP.GiveHealth(Damage, bbPlayer(InstigatedBy), HitLocation, momentum, damageType);
+	//else if (bbP != None && bbPlayer(InstigatedBy) != None && Which == 2)
+	//	bbP.StealHealth(Damage, bbPlayer(InstigatedBy), HitLocation, momentum, damageType);
+	//else
+		Other.TakeDamage(Damage, InstigatedBy, HitLocation, momentum, damageType);
+	
+	if (bHack && bbK.Weapon != None)
+	{
+		bbK.Weapon.Destroy();
+		bbK.Weapon = W;
+	}
+
+	xxDisableCarcasses();
+}
+
+
+function xxNN_ServerTakeDamage( actor Other, class<Weapon> WeapClass, int Damage, Pawn InstigatedBy, Vector HitLocation, BetterVector BetterMomentum, name DamageType, int ProjIndex, optional int DamageRadius, optional int Which, optional vector HitNormal, optional bool bSpecial)
+{
+	local bbPlayer bbP, bbK;
+	local Weapon W;
+	local bool bHack;
+	local Projectile Proj;
+	local vector ProjLocation;
+	local int MaxHitError;
+	local vector Momentum;
+	
+	bbP = bbPlayer(Other);
+	if (Other == None || InstigatedBy == None || xxGarbageLocation(Other) || bbP != None && !bbP.xxCloseEnough(HitLocation))
+		return;
+	
+	xxEnableCarcasses();
+	bbK = bbPlayer(InstigatedBy);
+	bHack = bbK != None && WeapClass != None && (bbK.Weapon == None || !bbK.Weapon.IsA(WeapClass.name));
+	if (bHack)
+	{
+		W = bbK.Weapon;
+		bbK.Weapon = Spawn(WeapClass, InstigatedBy);
+	}
+	
+	if (bbP != None && ProjIndex > -1)
+	{
+		Proj = zzNN_Projectiles[ProjIndex];
+		if (Proj == None)
+			ProjLocation = zzNN_ProjLocations[ProjIndex];
+		else
+			ProjLocation = Proj.Location;
+		//zzNN_ProjLocations[ProjIndex] = vect(0, 0, 0);
+		
+		MaxHitError = zzUTPure.settings.MaxHitError;
+		if (ProjLocation.X == 0 && ProjLocation.Y == 0 && ProjLocation.Z == 0 || VSize(HitLocation - ProjLocation) > MaxHitError || !bbP.xxCloseEnough(HitLocation, DamageRadius))
+			Other = None;
+	}
+	
+	if (bSpecial)
+	{
+		if (bbK.Weapon.IsA('PulseGun'))
+		{
+			bbK.zzNN_HitActorLast = Other;
+			bbK.zzNN_HitLocLast = HitLocation;
+			bbK.zzNN_HitNormalLast = HitNormal;
+		}
+	}
+	
+	bbK.zzNN_HitActor = Other;
+	bbK.zzNN_HitLoc = HitLocation;
+	
+	if (Other != None)
+	{
+		Momentum = GetVector(BetterMomentum);
+		//if (bbP != None && Which == 1)
+		//	bbP.GiveHealth(Damage, bbPlayer(InstigatedBy), HitLocation, Momentum, DamageType);
+		//else if (bbP != None && Which == 2)
+		//	bbP.StealHealth(Damage, bbPlayer(InstigatedBy), HitLocation, Momentum, DamageType);
+		//else
+			Other.TakeDamage(Damage, InstigatedBy, HitLocation, Momentum, DamageType);
+	}
+	
+	if (bHack)
+	{
+		bbK.Weapon.Destroy();
+		bbK.Weapon = W;
+	}
+	xxDisableCarcasses();
+	
 }
 
 function GiveHealth( int Damage, bbPlayer InstigatedBy, Vector HitLocation,

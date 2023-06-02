@@ -12,7 +12,7 @@ replication
 simulated function Tick(float DeltaTime)
 {
 	local bbPlayer bbP;
-
+	
 	if ( Owner == None )
 		return;
 
@@ -35,7 +35,6 @@ simulated function Tick(float DeltaTime)
 			{
 				Velocity *= 2;
 				NN_EndAccelTime = Level.TimeSeconds + NN_OwnerPing * Level.TimeDilation / 2500;
-				//for (P = Level.PawnList; P != None; P = P.NextPawn)
 				ForEach AllActors(class'bbPlayer', bbP)
 					if ( Viewport(bbP.Player) != None )
 						NN_EndAccelTime += bbP.PlayerReplicationInfo.Ping * Level.TimeDilation / 2500;
@@ -46,9 +45,7 @@ simulated function Tick(float DeltaTime)
 				NN_OwnerPing = 0;
 			}
 		}
-
 	}
-
 }
 
 simulated function Explode(vector HitLocation,vector HitNormal)
@@ -78,7 +75,6 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		//for (P = Level.PawnList; P != None; P = P.NextPawn)
 		ForEach AllActors(class'PlayerPawn', P)
 			if (P != Instigator) {
 				if (Dmg > 60)
@@ -97,8 +93,6 @@ function SuperExplosion()	// aka, combo.
 
 	DoSuperExplosion();
 	PlayOwnedSound(ExploSound,,20.0,,2000,0.6);
-	//Spawn(Class'ut_ComboRing',,'',Location, Instigator.ViewRotation);
-	//PlaySound(ExploSound,,20.0,,2000,0.6);
 	if (bbPlayer(Instigator) != None)
 		bbPlayer(Instigator).xxNN_ClientProjExplode(-1*(zzNN_ProjIndex + 1));
 
@@ -111,7 +105,6 @@ simulated function DoSuperExplosion()
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		//for (P = Level.PawnList; P != None; P = P.NextPawn)
 		ForEach AllActors(class'PlayerPawn', P)
 			if (P != Owner) {
 				CR = P.Spawn(Class'ut_ComboRing',P,'',Location, Pawn(Owner).ViewRotation);
@@ -126,8 +119,6 @@ function SuperDuperExplosion()	// aka, combo.
 		HurtRadius(Damage*9, 750, MyDamageType, MomentumTransfer*6, Location );
 	DoSuperDuperExplosion();
 	PlayOwnedSound(ExploSound,,20.0,,2000,0.6);
-	//Spawn(Class'UT_SuperComboRing',,'',Location, Instigator.ViewRotation);
-	//PlaySound(ExploSound,,20.0,,2000,0.6);
 	if (bbPlayer(Instigator) != None)
 		bbPlayer(Instigator).xxNN_ClientProjExplode(-1*(zzNN_ProjIndex + 1));
 

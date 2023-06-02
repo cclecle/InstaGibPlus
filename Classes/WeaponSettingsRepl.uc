@@ -70,6 +70,9 @@ var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
 
+var float ComboShockBeamDamage;
+var float ComboShockBeamMomentum;
+
 var float BioSelectTime;
 var float BioDownTime;
 var float BioDamage;
@@ -181,6 +184,9 @@ replication {
 		ShockComboDamage,
 		ShockComboMomentum,
 		ShockComboHurtRadius,
+		
+		ComboShockBeamDamage,
+		ComboShockBeamMomentum,
 
 		BioSelectTime,
 		BioDownTime,
@@ -486,7 +492,10 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockComboDamage = S.ShockComboDamage;
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
-
+	
+	ComboShockBeamDamage = S.ComboShockBeamDamage;
+	ComboShockBeamMomentum = S.ComboShockBeamMomentum;
+	
 	BioSelectTime = S.BioSelectTime;
 	BioDownTime = S.BioDownTime;
 	BioDamage = S.BioDamage;
@@ -637,6 +646,9 @@ defaultproperties
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
+	
+	ComboShockBeamDamage=600
+	ComboShockBeamMomentum=1.0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333

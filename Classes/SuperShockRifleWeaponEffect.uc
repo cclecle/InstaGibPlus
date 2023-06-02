@@ -1,6 +1,8 @@
 class SuperShockRifleWeaponEffect extends WeaponEffect
 	abstract;
 
+var bool WithRing;
+
 static function Play(
 	PlayerPawn Player,
 	ClientSettings Settings,
@@ -30,7 +32,8 @@ static function Play(
 	}
 
 	PlayBeam(Player, Settings, SourcePRI, SmokeLocation, HitLocation, HitNormal);
-	PlayRing(Player, Settings, SourcePRI, HitLocation, HitNormal);
+	if(default.WithRing)
+		PlayRing(Player, Settings, SourcePRI, HitLocation, HitNormal);
 }
 
 static function PlayBeam(
@@ -143,4 +146,9 @@ static function PlayRing(
 			}
 			breaK;
 	}
+}
+
+defaultproperties
+{
+	WithRing=True;
 }

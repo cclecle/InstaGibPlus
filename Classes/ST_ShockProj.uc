@@ -11,6 +11,25 @@ var ST_Mutator STM;
 // For Standstill combo Special
 var vector StartLocation;
 
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 simulated function PostBeginPlay()
 {
 	if (ROLE == ROLE_Authority)
@@ -29,10 +48,10 @@ function SuperExplosion()	// aka, combo.
 	STM.PlayerFire(Instigator, 7);				// 7 = Shock Combo -> Instigator gets +1 Combo
 	STM.PlayerHit(Instigator, 7, Instigator.Location == StartLocation);	// 7 = Shock Combo, bSpecial if Standstill.
 	HurtRadius(
-		STM.WeaponSettings.ShockComboDamage,
-		STM.WeaponSettings.ShockComboHurtRadius,
+		GetWeaponSettings().ShockComboDamage,
+		GetWeaponSettings().ShockComboHurtRadius,
 		MyDamageType,
-		STM.WeaponSettings.ShockComboMomentum*MomentumTransfer*2,
+		GetWeaponSettings().ShockComboMomentum*MomentumTransfer*2,
 		Location);
 	STM.PlayerClear();
 	
@@ -47,13 +66,13 @@ function Explode(vector HitLocation,vector HitNormal)
 	PlaySound(ImpactSound, SLOT_Misc, 0.5,,, 0.5+FRand());
 	STM.PlayerHit(Instigator, 6, False);	// 6 = Shock Ball
 	HurtRadius(
-		STM.WeaponSettings.ShockProjectileDamage,
-		STM.WeaponSettings.ShockProjectileHurtRadius,
+		GetWeaponSettings().ShockProjectileDamage,
+		GetWeaponSettings().ShockProjectileHurtRadius,
 		MyDamageType,
-		STM.WeaponSettings.ShockProjectileMomentum*MomentumTransfer,
+		GetWeaponSettings().ShockProjectileMomentum*MomentumTransfer,
 		Location);
 	STM.PlayerClear();
-	if (STM.WeaponSettings.ShockProjectileDamage > 60)
+	if (GetWeaponSettings().ShockProjectileDamage > 60)
 		Spawn(class'ut_RingExplosion3',,, HitLocation+HitNormal*8,rotator(HitNormal));
 	else
 		Spawn(class'ut_RingExplosion',,, HitLocation+HitNormal*8,rotator(Velocity));		

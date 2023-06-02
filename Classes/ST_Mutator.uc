@@ -382,7 +382,7 @@ function string GetReplacementWeapon(Weapon W, bool bDamnEpic)
 			WStr = "ST_ut_biorifle";
 		BitMap = (1 << 4);				// BioRifle = 04
 	}
-	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('ST_ShockRifle')) || W.IsA('ASMD'))
+	else if ((W.IsA('ShockRifle') && !W.IsA('SuperShockRifle') && !W.IsA('ST_ShockRifle') && !W.IsA('ST_ComboShockRifle') && !W.IsA('NN_ComboShockRifle')) || W.IsA('ASMD'))
 	{
 		if (WeaponSettings.bReplaceShockRifle)
 			WStr = "ST_ShockRifle";

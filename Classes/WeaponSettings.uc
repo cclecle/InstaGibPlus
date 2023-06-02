@@ -84,6 +84,9 @@ var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
 
+var config float ComboShockBeamDamage;
+var config float ComboShockBeamMomentum;
+
 var config float BioSelectTime;
 var config float BioDownTime;
 var config float BioDamage;
@@ -210,6 +213,9 @@ defaultproperties
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
+	
+	ComboShockBeamDamage=600
+	ComboShockBeamMomentum=1.0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333
