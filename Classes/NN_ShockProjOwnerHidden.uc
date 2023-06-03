@@ -88,6 +88,7 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 
 function SuperExplosion()	// aka, combo.
 {
+
 	if (!bbPlayer(Owner).bNewNet)
 		HurtRadius(Damage*3, 250, MyDamageType, MomentumTransfer*2, Location );
 
@@ -101,15 +102,27 @@ function SuperExplosion()	// aka, combo.
 
 simulated function DoSuperExplosion()
 {
-	local PlayerPawn P;
+	local Pawn P;
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		ForEach AllActors(class'PlayerPawn', P)
-			if (P != Owner) {
+		ForEach AllActors(class'Pawn', P)
+		{
+			if(MessagingSpectator(P)!=None) continue;
+			if(!P.bIsPlayer) continue;
+			
+			if (P != Owner)
+			{
 				CR = P.Spawn(Class'ut_ComboRing',P,'',Location, Pawn(Owner).ViewRotation);
 				CR.bOnlyOwnerSee = True;
 			}
+			else
+			{
+				CR = P.Spawn(Class'ut_ComboRing',P,'',Location, Pawn(Owner).ViewRotation);
+				CR.RemoteRole = ROLE_None;
+			}
+			
+		}
 	}
 }
 

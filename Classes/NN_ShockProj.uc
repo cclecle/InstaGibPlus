@@ -15,11 +15,6 @@ var int DamageMultiplierExplode;
 var int DamageMultiplierSuperExplode;
 var int DamageMultiplierSuperDuperExplode;
 
-simulated function Spawned()
-{
-	log("NN_ShockProj SPAWNED");
-}
-
 simulated function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -53,6 +48,38 @@ function SuperExplosion()	// aka, combo.
 	Destroy();
 }
 
+simulated function NN_SuperExplosion(Pawn Pwner)	// aka, combo.
+{
+	local rotator Tater;
+	local bbPlayer bbP;
+    local UT_ComboRing Ring;
+
+	bbP = bbPlayer(Pwner);
+	Tater = Pwner.ViewRotation;
+
+	if (bbP != None && bbP.bNewNet)
+	{
+		if (Level.NetMode == NM_Client)
+		{
+			bbP.NN_HurtRadius(self, class'ShockRifle', Damage*DamageMultiplierSuperExplode, 250, MyDamageType, MomentumTransfer*2, Location, zzNN_ProjIndex );
+			bbP.xxNN_RemoveProj(zzNN_ProjIndex, Location, vect(0,0,0), true);
+		}
+	}
+	else
+	{
+		HurtRadius(Damage*DamageMultiplierSuperExplode, 250, MyDamageType, MomentumTransfer*2, Location );
+	} 
+	Ring = Spawn(Class'ut_ComboRing',Pwner,'',Location, Tater);
+	
+	PlaySound(ExploSound,,20.0,,2000,0.6);
+    if(bbP != none)
+    {
+        bbP.xxClientDemoFix(Ring, class'ut_ComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
+    }
+
+	Destroy();
+}
+
 function SuperDuperExplosion()	// aka, combo.
 {
 	local bbPlayer bbP;
@@ -77,36 +104,6 @@ function SuperDuperExplosion()	// aka, combo.
 	Destroy();
 }
 
-simulated function NN_SuperExplosion(Pawn Pwner)	// aka, combo.
-{
-	local rotator Tater;
-	local bbPlayer bbP;
-    local UT_ComboRing Ring;
-
-	bbP = bbPlayer(Pwner);
-	Tater = Pwner.ViewRotation;
-
-	if (bbP != None && bbP.bNewNet)
-	{
-		if (Level.NetMode == NM_Client)
-		{
-			bbP.NN_HurtRadius(self, class'ShockRifle', Damage*DamageMultiplierSuperExplode, 250, MyDamageType, MomentumTransfer*2, Location, zzNN_ProjIndex );
-			bbP.xxNN_RemoveProj(zzNN_ProjIndex, Location, vect(0,0,0), true);
-		}
-	}
-	else
-	{
-		HurtRadius(Damage*DamageMultiplierSuperExplode, 250, MyDamageType, MomentumTransfer*2, Location );
-	} 
-	Ring = Spawn(Class'ut_ComboRing',Pwner,'',Location, Tater);
-	PlaySound(ExploSound,,20.0,,2000,0.6);
-    if(bbP != none)
-    {
-        bbP.xxClientDemoFix(Ring, class'ut_ComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
-    }
-
-	Destroy();
-}
 
 simulated function NN_SuperDuperExplosion(Pawn Pwner)	// aka, combo.
 {
@@ -132,10 +129,12 @@ simulated function NN_SuperDuperExplosion(Pawn Pwner)	// aka, combo.
 	Ring = Spawn(Class'UT_SuperComboRing',Pwner,'',Location, Tater);
 	PlaySound(ExploSound,,20.0,,2000,0.6);
     if(bbP != none)
-        bbP.xxClientDemoFix(Ring, Class'UT_SuperComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
+	bbP.xxClientDemoFix(Ring, Class'UT_SuperComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
 
 	Destroy();
 }
+
+
 
 auto state Flying
 {
@@ -161,8 +160,6 @@ auto state Flying
 simulated function Explode(vector HitLocation, vector HitNormal)
 {
 	local bbPlayer bbP;
-	
-	log("FAKE EXPLODE ?");
 
 	bbP = bbPlayer(Owner);
 

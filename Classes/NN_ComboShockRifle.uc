@@ -497,8 +497,8 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 function TraceFire( float Accuracy )
 {
 	local bbPlayer bbP;
-	local vector NN_HitLoc, HitNormal, StartTrace, EndTrace, X,Y,Z;
-
+	local vector NN_HitLoc, HitLocation,HitNormal, StartTrace, EndTrace, X,Y,Z;
+	
 	if (Owner.IsA('Bot'))
 	{
 		Super.TraceFire(Accuracy);
@@ -541,6 +541,7 @@ function TraceFire( float Accuracy )
 	}
 	else
 	{
+		bbP.zzNN_HitActor = bbP.TraceShot(HitLocation,HitNormal,EndTrace,StartTrace);
 		NN_HitLoc = bbP.zzNN_HitLoc;
 	}
 	ProcessTraceHit(bbP.zzNN_HitActor, NN_HitLoc, HitNormal, vector(AdjustedAim), Y, Z);
@@ -556,7 +557,9 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	local bbPlayer bbP;
 	local vector HitOffset;
 	local vector SmokeOffset;
-
+	local bool	bCombo;
+	local class<SuperShockRifleWeaponEffect> ClsWPEffect;
+	
 	if (Owner.IsA('Bot'))
 	{
 		Super.ProcessTraceHit(Other, HitLocation, HitNormal, X, Y, Z);
@@ -578,12 +581,30 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 
 	SmokeOffset = CalcDrawOffset() + (FireOffset.X + 20) * X + FireOffset.Y * Y + FireOffset.Z * Z;
 	SpawnEffect(HitLocation, Owner.Location + SmokeOffset);
+	
+	if ( NN_ShockProjOwnerHidden(Other)!=None )
+	{
+		AmmoType.UseAmmo(1);
+		Other.SetOwner(Owner);
+		NN_ShockProjOwnerHidden(Other).SuperExplosion();
+		bCombo=True;
+	}
+	else if ( NN_ShockProj(Other)!=None )
+	{
+		AmmoType.UseAmmo(1);
+		NN_ShockProj(Other).SuperExplosion();
+		bCombo=True;
+	}
+	
+	if(bCombo)	ClsWPEffect = class'SuperShockRifleWeaponEffectNoRing';
+	else		ClsWPEffect = class'SuperShockRifleWeaponEffect';
+	
 	if (Owner.IsA('Bot') == false) {
 		for (P = Level.PawnList; P != none; P = P.NextPawn) {
 			if (P == Owner) continue;
 			if (bbPlayer(P) != none)
 				bbPlayer(P).SendWeaponEffect(
-					class'SuperShockRifleWeaponEffect',
+					ClsWPEffect,
 					Pawn(Owner).PlayerReplicationInfo,
 					Owner.Location + SmokeOffset,
 					SmokeOffset,
@@ -593,7 +614,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 					HitNormal);
 			else if (bbCHSpectator(P) != none)
 				bbCHSpectator(P).SendWeaponEffect(
-					class'SuperShockRifleWeaponEffect',
+					ClsWPEffect,
 					Pawn(Owner).PlayerReplicationInfo,
 					Owner.Location + SmokeOffset,
 					SmokeOffset,
@@ -604,7 +625,7 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 		}
 	}
 
-	if ( (Other != self) && (Other != Owner) && (Other != None) )
+	if (!bCombo && (Other != self) && (Other != Owner) && (Other != None) )
 	{
 		Other.TakeDamage(HitDamage, PawnOwner, HitLocation, 60000.0*X, ST_MyDamageType);
 	}
