@@ -6,6 +6,27 @@
 
 class NN_ShockProj extends ShockProj;
 
+#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a00 FILE=Textures\ShockProj\ASMDAlt_TRED_a00.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a01 FILE=Textures\ShockProj\ASMDAlt_TRED_a01.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a02 FILE=Textures\ShockProj\ASMDAlt_TRED_a02.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a03 FILE=Textures\ShockProj\ASMDAlt_TRED_a03.pcx
+
+#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a00 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a00.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a01 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a01.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a02 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a02.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a03 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a03.pcx
+
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a00 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a00.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a01 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a01.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a02 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a02.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a03 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a03.pcx
+
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a00 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a00.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a01 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a01.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a02 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a02.pcx
+#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a03 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a03.pcx
+
+
 // For Standstill combo Special
 var vector StartLocation;
 var actor NN_HitOther;
@@ -15,6 +36,19 @@ var int DamageMultiplierExplode;
 var int DamageMultiplierSuperExplode;
 var int DamageMultiplierSuperDuperExplode;
 
+var bool 	bTeamColor;
+var bool 	bTeamColorDone;
+var int 	iTeamIdx;
+var byte 	currTx;
+
+var Texture TeamTextures[4];
+
+replication
+{
+	unreliable if(Role == ROLE_Authority && bNetOwner)
+		bTeamColor,iTeamIdx;
+}
+
 simulated function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -23,7 +57,59 @@ simulated function PostBeginPlay()
 		StartLocation = Instigator.Location;
 	else if (Owner != None)
 		StartLocation = Owner.Location;
+
+	currTx=0;
+	SetTimer(0.025, True);
 }
+
+simulated function applyTeamColor()
+{
+	switch(iTeamIdx)
+	{
+		case 0:
+			TeamTextures[0] = Texture'ASMDAlt_TRED_a00';
+			TeamTextures[1] = Texture'ASMDAlt_TRED_a01';
+			TeamTextures[2] = Texture'ASMDAlt_TRED_a02';
+			TeamTextures[3] = Texture'ASMDAlt_TRED_a03';
+			break;
+		case 1:
+			TeamTextures[0] = Texture'ASMDAlt_TBLUE_a00';
+			TeamTextures[1] = Texture'ASMDAlt_TBLUE_a01';
+			TeamTextures[2] = Texture'ASMDAlt_TBLUE_a02';
+			TeamTextures[3] = Texture'ASMDAlt_TBLUE_a03';
+			break;
+		case 2:
+			TeamTextures[0] = Texture'ASMDAlt_TGREEN_a00';
+			TeamTextures[1] = Texture'ASMDAlt_TGREEN_a01';
+			TeamTextures[2] = Texture'ASMDAlt_TGREEN_a02';
+			TeamTextures[3] = Texture'ASMDAlt_TGREEN_a03';
+			break;
+		case 3:
+			TeamTextures[0] = Texture'ASMDAlt_TGOLD_a00';
+			TeamTextures[1] = Texture'ASMDAlt_TGOLD_a01';
+			TeamTextures[2] = Texture'ASMDAlt_TGOLD_a02';
+			TeamTextures[3] = Texture'ASMDAlt_TGOLD_a03';
+			break;
+		default:
+			bTeamColor=False;
+			break;
+	}
+}
+
+simulated function Timer()
+{
+	if(bTeamColor && !bTeamColorDone)
+	{
+		applyTeamColor();
+		bTeamColorDone=True;
+	}
+	if(bTeamColor)
+	{
+		Texture = TeamTextures[currTx%4];
+		currTx++;
+	}
+}
+
 
 function SuperExplosion()	// aka, combo.
 {
@@ -128,8 +214,8 @@ simulated function NN_SuperDuperExplosion(Pawn Pwner)	// aka, combo.
 	} 
 	Ring = Spawn(Class'UT_SuperComboRing',Pwner,'',Location, Tater);
 	PlaySound(ExploSound,,20.0,,2000,0.6);
-    if(bbP != none)
-	bbP.xxClientDemoFix(Ring, Class'UT_SuperComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
+	if(bbP != none)
+		bbP.xxClientDemoFix(Ring, Class'UT_SuperComboRing', Location, Ring.Velocity, Ring.Acceleration, Tater);
 
 	Destroy();
 }

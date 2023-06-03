@@ -161,6 +161,10 @@ var localized string MoreInformationText;
 	var localized string cShockBeamTeamColored;
 	var localized string cShockBeamHidden;
 	var localized string cShockBeamInstant;
+	
+	var UWindowCheckbox Chk_TeamColoredShockRifle;
+	var localized string TeamColoredShockRifleText;
+	var localized string TeamColoredShockRifleHelp;
 
 	var UWindowCheckbox Chk_HideOwnBeam;
 	var localized string HideOwnBeamText;
@@ -816,6 +820,7 @@ function Created() {
 	Cmb_cShockBeam.AddItem(cShockBeamHidden);
 	Cmb_cShockBeam.AddItem(cShockBeamInstant);
 	Chk_HideOwnBeam = CreateCheckbox(HideOwnBeamText, HideOwnBeamHelp);
+	Chk_TeamColoredShockRifle = CreateCheckbox(TeamColoredShockRifleText, TeamColoredShockRifleHelp);
 	Edit_BeamScale = CreateEdit(ECT_Real, BeamScaleText, BeamScaleHelp, , 64);
 	Edit_BeamFadeCurve = CreateEdit(ECT_Integer, BeamFadeCurveText, BeamFadeCurveHelp, , 64);
 	Edit_BeamDuration = CreateEdit(ECT_Real, BeamDurationText, BeamDurationHelp, , 64);
@@ -964,6 +969,7 @@ function Load() {
 
 	Cmb_cShockBeam.SetSelectedIndex(Clamp(Settings.cShockBeam - 1, 0, 3));
 	Chk_HideOwnBeam.bChecked = Settings.bHideOwnBeam;
+	Chk_TeamColoredShockRifle.bChecked = Settings.bTeamColoredShockRifle;
 	Edit_BeamScale.SetValue(string(Settings.BeamScale));
 	Edit_BeamFadeCurve.SetValue(string(int(Settings.BeamFadeCurve)));
 	Edit_BeamDuration.SetValue(string(Settings.BeamDuration));
@@ -1063,6 +1069,7 @@ function Save() {
 
 	Settings.cShockBeam = Cmb_cShockBeam.GetSelectedIndex() + 1;
 	Settings.bHideOwnBeam = Chk_HideOwnBeam.bChecked;
+	Settings.bTeamColoredShockRifle = Chk_TeamColoredShockRifle.bChecked;
 	Settings.BeamScale = float(Edit_BeamScale.GetValue());
 	Settings.BeamFadeCurve = int(Edit_BeamFadeCurve.GetValue());
 	Settings.BeamDuration = float(Edit_BeamDuration.GetValue());
@@ -1265,7 +1272,10 @@ defaultproperties
 
 		HideOwnBeamText="Always Hide Own Beams"
 		HideOwnBeamHelp="If checked, your own beams will always be hidden"
-
+		
+		TeamColoredShockRifleText="Use Team colored ShockRifles"
+		TeamColoredShockRifleHelp="If checked, ShockRifles will be team-colored"
+	
 		BeamScaleText="Beam Scale"
 		BeamScaleHelp="Diameter of the beam of the IG+ SSR"
 

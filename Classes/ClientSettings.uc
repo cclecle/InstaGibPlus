@@ -46,6 +46,7 @@ var config float  HitSoundTeamVolume;
 var config string sHitSound[16];
 var config int    cShockBeam;
 var config bool   bHideOwnBeam;
+var config bool   bTeamColoredShockRifle;
 var config float  BeamScale;
 var config float  BeamFadeCurve;
 var config float  BeamDuration;
@@ -333,6 +334,7 @@ simulated function string DumpSettings() {
 		DumpHitSounds()$
 		GetSetting("cShockBeam")$
 		GetSetting("bHideOwnBeam")$
+		GetSetting("bTeamColoredShockRifle")$
 		GetSetting("BeamScale")$
 		GetSetting("BeamFadeCurve")$
 		GetSetting("BeamDuration")$
@@ -414,6 +416,7 @@ defaultproperties
 	sHitSound(3)="InstaGibPlus9.HitSound1"
 	cShockBeam=1
 	bHideOwnBeam=False
+	bTeamColoredShockRifle=False
 	BeamScale=0.45
 	BeamFadeCurve=4
 	BeamDuration=0.75

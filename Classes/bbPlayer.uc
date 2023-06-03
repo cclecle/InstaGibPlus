@@ -9287,6 +9287,15 @@ exec function ShowOwnBeam() {
 		ClientMessage("Own beam shown!", 'IGPlus');
 }
 
+exec function TeamColoredShockRifle() {
+	Settings.bTeamColoredShockRifle = !Settings.bTeamColoredShockRifle;
+	IGPlus_SaveSettings();
+	if (Settings.bTeamColoredShockRifle)
+		ClientMessage("SockRifle are now Team Colored!", 'IGPlus');
+	else
+		ClientMessage("SockRifle are now NOT Team Colored!", 'IGPlus');
+}
+
 function ClientShake(vector shake) {
 	if (Settings.bAllowWeaponShake)
 		super.ClientShake(shake);

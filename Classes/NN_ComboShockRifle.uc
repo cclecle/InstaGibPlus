@@ -1,16 +1,130 @@
-// ===============================================================
-// Stats.ST_SuperShockRifle: put your comment here
-
-// Created by UClasses - (C) 2000-2001 by meltdown@thirdtower.com
-// ===============================================================
-
 class NN_ComboShockRifle extends ShockRifle;
 
-var bool bNewNet;				// Self-explanatory lol
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t  FILE=Textures\ShockRifle\TRED_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t1 FILE=Textures\ShockRifle\TRED_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t2 FILE=Textures\ShockRifle\TRED_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t3 FILE=Textures\ShockRifle\TRED_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t4 FILE=Textures\ShockRifle\TRED_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t  FILE=Textures\ShockRifle\TBLUE_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t1 FILE=Textures\ShockRifle\TBLUE_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t2 FILE=Textures\ShockRifle\TBLUE_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t3 FILE=Textures\ShockRifle\TBLUE_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t4 FILE=Textures\ShockRifle\TBLUE_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t  FILE=Textures\ShockRifle\TGOLD_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t1 FILE=Textures\ShockRifle\TGOLD_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t2 FILE=Textures\ShockRifle\TGOLD_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t3 FILE=Textures\ShockRifle\TGOLD_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t4 FILE=Textures\ShockRifle\TGOLD_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t  FILE=Textures\ShockRifle\TGREEN_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t1 FILE=Textures\ShockRifle\TGREEN_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t2 FILE=Textures\ShockRifle\TGREEN_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t3 FILE=Textures\ShockRifle\TGREEN_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t4 FILE=Textures\ShockRifle\TGREEN_ASMD_t4.PCX LODSET=2
+
+var bool bNewNet;
 var Vector CDO;
 var float yMod;
 var float LastFiredTime;
 var name ST_MyDamageType;
+
+var bool 	bTeamColor;
+var bool 	bTeamColorPrev;
+var int 	iTeamIdx;
+
+simulated event Tick( float DeltaTime )
+{
+	local bbPlayer bbP;
+	super.Tick(DeltaTime);
+	if (Level.NetMode != NM_DedicatedServer) {
+		bbP = bbPlayer(Owner);
+		if (bbP!=None) {
+			bTeamColor=bbP.Settings.bTeamColoredShockRifle;
+			if(bTeamColorPrev!=bTeamColor) {
+				if(UpdateWeaponSkin()) bTeamColorPrev = bTeamColor;
+			}
+		}
+	}
+}
+
+// try to update WeaponSkins, return True on success 
+simulated function bool UpdateWeaponSkin() {
+	local bbPlayer bbP;
+	
+	bbP = bbPlayer(Owner);
+	
+	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle)) {
+		log(bbP.Settings.bTeamColoredShockRifle);
+		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
+	}
+	
+	if(bTeamColor) {
+		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None) return False;
+		iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
+		if(bNetOwner)
+		{
+			switch(iTeamIdx) {
+				case 0:
+					MultiSkins[0] = Texture'TRED_ASMD_t1';
+					MultiSkins[1] = Texture'TRED_ASMD_t2';
+					MultiSkins[2] = Texture'TRED_ASMD_t3';
+					MultiSkins[3] = Texture'TRED_ASMD_t4';
+					break;
+				case 1:
+					MultiSkins[0] = Texture'TBLUE_ASMD_t1';
+					MultiSkins[1] = Texture'TBLUE_ASMD_t2';
+					MultiSkins[2] = Texture'TBLUE_ASMD_t3';
+					MultiSkins[3] = Texture'TBLUE_ASMD_t4';
+					break;
+				case 2:
+					MultiSkins[0] = Texture'TGREEN_ASMD_t1';
+					MultiSkins[1] = Texture'TGREEN_ASMD_t2';
+					MultiSkins[2] = Texture'TGREEN_ASMD_t3';
+					MultiSkins[3] = Texture'TGREEN_ASMD_t4';
+					break;
+				case 3:
+					MultiSkins[0] = Texture'TGOLD_ASMD_t1';
+					MultiSkins[1] = Texture'TGOLD_ASMD_t2';
+					MultiSkins[2] = Texture'TGOLD_ASMD_t3';
+					MultiSkins[3] = Texture'TGOLD_ASMD_t4';
+					break;
+			}
+		}
+		else
+		{
+			switch(iTeamIdx) {
+				case 0:
+					MultiSkins[1] = Texture'TRED_ASMD_t';
+					break;
+				case 1:
+					MultiSkins[1] = Texture'TBLUE_ASMD_t';
+					break;
+				case 2:
+					MultiSkins[1] = Texture'TGREEN_ASMD_t';
+					break;
+				case 3:
+					MultiSkins[1] = Texture'TGOLD_ASMD_t';
+					break;
+			}
+		}
+	}
+	else {
+		MultiSkins[0] = None;
+		MultiSkins[1] = None;
+		MultiSkins[2] = None;
+		MultiSkins[3] = None;
+	}
+	
+	return True;
+}
+	
+simulated function PlaySelect()
+{
+	Class'NN_WeaponFunctions'.static.PlaySelect( self);
+	UpdateWeaponSkin();
+}
 
 simulated function RenderOverlays(Canvas Canvas)
 {
@@ -139,6 +253,8 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local Vector Start, X,Y,Z;
 	local PlayerPawn PlayerOwner;
 	local bbPlayer bbP;
+	local Projectile Proj;
+	local NN_ShockProj ST_Proj;
 	
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
@@ -152,8 +268,6 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	
 	Owner.MakeNoise(Pawn(Owner).SoundDampening);
 
-	if (Level.TimeSeconds - LastFiredTime < 0.4)
-		return None;
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
 	if (Mover(bbP.Base) == None)
 		Start = bbP.zzNN_ClientLoc + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
@@ -165,8 +279,21 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	if ( PlayerOwner != None )
 		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
 	
-	LastFiredTime = Level.TimeSeconds;
-	return Spawn(ProjClass,Owner,, Start,AdjustedAim);
+	Proj = Spawn(ProjClass,Owner,, Start,AdjustedAim);
+	ST_Proj = NN_ShockProj(Proj);
+	if (ST_Proj != None)
+	{
+		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
+		{
+			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
+			{
+				ST_Proj.bTeamColor = bTeamColor;
+				ST_Proj.iTeamIdx = iTeamIdx;
+			}
+		}
+	}
+	
+	return Proj;
 }
 
 simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, float ProjSpeed, bool bWarn)
@@ -184,20 +311,33 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	yModInit();
 
 	bbP = bbPlayer(Owner);
-	if (bbP == None || (Level.TimeSeconds - LastFiredTime) < 0.4)
+	if (bbP == None)
 		return None;
 
 	GetAxes(bbP.ViewRotation,X,Y,Z);
 	Start = Owner.Location + CDO + FireOffset.X * X + yMod * Y + FireOffset.Z * Z;
 	if ( PlayerOwner != None )
 		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
-
-	LastFiredTime = Level.TimeSeconds;
+	
 	Proj = Spawn(ProjClass,Owner,, Start,bbP.ViewRotation);
+	Proj.RemoteRole = ROLE_None;
+	
 	ST_Proj = NN_ShockProj(Proj);
 	ProjIndex = bbP.xxNN_AddProj(Proj);
+
 	if (ST_Proj != None)
-		ST_Proj.zzNN_ProjIndex = ProjIndex;
+	{
+		ST_Proj.zzNN_ProjIndex 	= ProjIndex;
+		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
+		{
+			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
+			{
+				ST_Proj.bTeamColor = bTeamColor;
+				ST_Proj.iTeamIdx = iTeamIdx;
+			}
+		}
+	}
+		
 	bbP.xxNN_AltFire(Level.TimeSeconds, ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
 	bbP.xxClientDemoFix(ST_Proj, Class'ShockProj', Start, ST_Proj.Velocity, Proj.Acceleration, bbP.ViewRotation);
 }
@@ -450,7 +590,7 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 		HitNormal = -X;
 		HitLocation = Owner.Location + X*100000.0;
 		HitOffset = HitLocation;
-	} else {
+	} else { 
 		HitOffset = HitLocation - Other.Location;
 	}
 
@@ -657,11 +797,6 @@ function SetSwitchPriority(pawn Other)
 	Class'NN_WeaponFunctions'.static.SetSwitchPriority( Other, self, 'ComboShockRifle');
 }
 
-simulated function PlaySelect ()
-{
-	Class'NN_WeaponFunctions'.static.PlaySelect( self);
-}
-
 simulated function TweenDown ()
 {
 	Class'NN_WeaponFunctions'.static.TweenDown( self);
@@ -688,7 +823,7 @@ state NormalFire
 
 state AltFiring
 {
-	function Fire(float F)
+	function AltFire(float F)
 	{
 		if (Owner.IsA('Bot'))
 		{
@@ -696,7 +831,7 @@ state AltFiring
 			return;
 		}
 		if (F > 0 && bbPlayer(Owner) != None)
-			Global.Fire(F);
+			Global.AltFire(F);
 	}
 }
 
@@ -733,12 +868,14 @@ auto state Pickup
 		Super(Inventory).Landed(HitNormal);
 	}
 }
-
+/*
+		PlayerViewMesh=LodMesh'Botpack.sshockm'
+*/
 defaultproperties
 {
+	ThirdPersonMesh=LodMesh'Botpack.ASMD2hand'
 	AltProjectileClass=Class'NN_ComboShockProj'
 	bNewNet=True
-	PickupViewMesh=LodMesh'Botpack.SASMD2hand'
 	PickupViewScale=1.750000
 	ST_MyDamageType=jolted
 	hitdamage=1000
@@ -747,6 +884,5 @@ defaultproperties
 	DeathMessage="%k electrified %o with the %w."
 	PickupMessage="You got the Combo Shock Rifle."
 	ItemName="Combo Shock Rifle"
-	PlayerViewMesh=LodMesh'Botpack.sshockm'
-	ThirdPersonMesh=LodMesh'Botpack.SASMD2hand'
+
 }
