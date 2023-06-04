@@ -32,7 +32,6 @@ var name ST_MyDamageType;
 
 var bool 	bTeamColor;
 var bool 	bTeamColorPrev;
-var int 	iTeamIdx;
 
 simulated event Tick( float DeltaTime )
 {
@@ -52,16 +51,16 @@ simulated event Tick( float DeltaTime )
 // try to update WeaponSkins, return True on success 
 simulated function bool UpdateWeaponSkin() {
 	local bbPlayer bbP;
+	local int 	iTeamIdx;
 	
 	bbP = bbPlayer(Owner);
 	
-	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle)) {
-		log(bbP.Settings.bTeamColoredShockRifle);
+	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle))
 		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
-	}
 	
 	if(bTeamColor) {
-		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None) return False;
+		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None)
+			return False;
 		iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
 		if(bNetOwner)
 		{
@@ -254,7 +253,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local PlayerPawn PlayerOwner;
 	local bbPlayer bbP;
 	local Projectile Proj;
-	local NN_ShockProj ST_Proj;
+	local NN_ComboShockProj ST_Proj;
 	
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
@@ -280,15 +279,15 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
 	
 	Proj = Spawn(ProjClass,Owner,, Start,AdjustedAim);
-	ST_Proj = NN_ShockProj(Proj);
+	ST_Proj = NN_ComboShockProj(Proj);
 	if (ST_Proj != None)
 	{
 		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
 		{
 			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
 			{
-				ST_Proj.bTeamColor = bTeamColor;
-				ST_Proj.iTeamIdx = iTeamIdx;
+				ST_Proj.bTeamColor 	= bTeamColor;
+				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
 			}
 		}
 	}
@@ -301,7 +300,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	local Vector Start, X,Y,Z;
 	local PlayerPawn PlayerOwner;
 	local Projectile Proj;
-	local NN_ShockProj ST_Proj;
+	local NN_ComboShockProj ST_Proj;
 	local int ProjIndex;
 	local bbPlayer bbP;
 
@@ -322,7 +321,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	Proj = Spawn(ProjClass,Owner,, Start,bbP.ViewRotation);
 	Proj.RemoteRole = ROLE_None;
 	
-	ST_Proj = NN_ShockProj(Proj);
+	ST_Proj = NN_ComboShockProj(Proj);
 	ProjIndex = bbP.xxNN_AddProj(Proj);
 
 	if (ST_Proj != None)
@@ -332,8 +331,8 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 		{
 			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
 			{
-				ST_Proj.bTeamColor = bTeamColor;
-				ST_Proj.iTeamIdx = iTeamIdx;
+				ST_Proj.bTeamColor 	= bTeamColor;
+				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
 			}
 		}
 	}

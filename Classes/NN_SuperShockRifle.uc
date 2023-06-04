@@ -6,11 +6,124 @@
 
 class NN_SuperShockRifle extends SuperShockRifle;
 
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t  FILE=Textures\ShockRifle\TRED_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t1 FILE=Textures\ShockRifle\TRED_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t2 FILE=Textures\ShockRifle\TRED_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t3 FILE=Textures\ShockRifle\TRED_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TRED_ASMD_t4 FILE=Textures\ShockRifle\TRED_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t  FILE=Textures\ShockRifle\TBLUE_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t1 FILE=Textures\ShockRifle\TBLUE_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t2 FILE=Textures\ShockRifle\TBLUE_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t3 FILE=Textures\ShockRifle\TBLUE_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TBLUE_ASMD_t4 FILE=Textures\ShockRifle\TBLUE_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t  FILE=Textures\ShockRifle\TGOLD_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t1 FILE=Textures\ShockRifle\TGOLD_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t2 FILE=Textures\ShockRifle\TGOLD_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t3 FILE=Textures\ShockRifle\TGOLD_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGOLD_ASMD_t4 FILE=Textures\ShockRifle\TGOLD_ASMD_t4.PCX LODSET=2
+
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t  FILE=Textures\ShockRifle\TGREEN_ASMD_t.PCX  LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t1 FILE=Textures\ShockRifle\TGREEN_ASMD_t1.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t2 FILE=Textures\ShockRifle\TGREEN_ASMD_t2.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t3 FILE=Textures\ShockRifle\TGREEN_ASMD_t3.PCX LODSET=2
+#exec TEXTURE IMPORT NAME=TGREEN_ASMD_t4 FILE=Textures\ShockRifle\TGREEN_ASMD_t4.PCX LODSET=2
+
 var bool bNewNet;				// Self-explanatory lol
 var Vector CDO;
 var float yMod;
 var float LastFiredTime;
 var name ST_MyDamageType;
+
+var bool 	bTeamColor;
+var bool 	bTeamColorPrev;
+
+simulated event Tick( float DeltaTime )
+{
+	local bbPlayer bbP;
+	super.Tick(DeltaTime);
+	if (Level.NetMode != NM_DedicatedServer) {
+		bbP = bbPlayer(Owner);
+		if (bbP!=None) {
+			bTeamColor=bbP.Settings.bTeamColoredShockRifle;
+			if(bTeamColorPrev!=bTeamColor) {
+				if(UpdateWeaponSkin()) bTeamColorPrev = bTeamColor;
+			}
+		}
+	}
+}
+
+// try to update WeaponSkins, return True on success 
+simulated function bool UpdateWeaponSkin() {
+	local bbPlayer bbP;
+	local int 	iTeamIdx;
+	
+	bbP = bbPlayer(Owner);
+	
+	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle))
+		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
+	
+	if(bTeamColor) {
+		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None) 
+			return False;
+		iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
+		if(bNetOwner)
+		{
+			switch(iTeamIdx) {
+				case 0:
+					MultiSkins[0] = Texture'TRED_ASMD_t1';
+					MultiSkins[1] = Texture'TRED_ASMD_t2';
+					MultiSkins[2] = Texture'TRED_ASMD_t3';
+					MultiSkins[3] = Texture'TRED_ASMD_t4';
+					break;
+				case 1:
+					MultiSkins[0] = Texture'TBLUE_ASMD_t1';
+					MultiSkins[1] = Texture'TBLUE_ASMD_t2';
+					MultiSkins[2] = Texture'TBLUE_ASMD_t3';
+					MultiSkins[3] = Texture'TBLUE_ASMD_t4';
+					break;
+				case 2:
+					MultiSkins[0] = Texture'TGREEN_ASMD_t1';
+					MultiSkins[1] = Texture'TGREEN_ASMD_t2';
+					MultiSkins[2] = Texture'TGREEN_ASMD_t3';
+					MultiSkins[3] = Texture'TGREEN_ASMD_t4';
+					break;
+				case 3:
+					MultiSkins[0] = Texture'TGOLD_ASMD_t1';
+					MultiSkins[1] = Texture'TGOLD_ASMD_t2';
+					MultiSkins[2] = Texture'TGOLD_ASMD_t3';
+					MultiSkins[3] = Texture'TGOLD_ASMD_t4';
+					break;
+			}
+		}
+		else
+		{
+			switch(iTeamIdx) {
+				case 0:
+					MultiSkins[1] = Texture'TRED_ASMD_t';
+					break;
+				case 1:
+					MultiSkins[1] = Texture'TBLUE_ASMD_t';
+					break;
+				case 2:
+					MultiSkins[1] = Texture'TGREEN_ASMD_t';
+					break;
+				case 3:
+					MultiSkins[1] = Texture'TGOLD_ASMD_t';
+					break;
+			}
+		}
+	}
+	else {
+		MultiSkins[0] = None;
+		MultiSkins[1] = None;
+		MultiSkins[2] = None;
+		MultiSkins[3] = None;
+	}
+	
+	return True;
+}
 
 simulated function RenderOverlays(Canvas Canvas)
 {

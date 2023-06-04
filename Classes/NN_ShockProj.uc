@@ -37,15 +37,12 @@ var int DamageMultiplierSuperExplode;
 var int DamageMultiplierSuperDuperExplode;
 
 var bool 	bTeamColor;
-var bool 	bTeamColorDone;
 var int 	iTeamIdx;
-var byte 	currTx;
 
-var Texture TeamTextures[4];
 
 replication
 {
-	unreliable if(Role == ROLE_Authority && bNetOwner)
+	reliable if(Role == ROLE_Authority)
 		bTeamColor,iTeamIdx;
 }
 
@@ -58,8 +55,7 @@ simulated function PostBeginPlay()
 	else if (Owner != None)
 		StartLocation = Owner.Location;
 
-	currTx=0;
-	SetTimer(0.025, True);
+	SetTimer(0.025, False);
 }
 
 simulated function applyTeamColor()
@@ -67,28 +63,16 @@ simulated function applyTeamColor()
 	switch(iTeamIdx)
 	{
 		case 0:
-			TeamTextures[0] = Texture'ASMDAlt_TRED_a00';
-			TeamTextures[1] = Texture'ASMDAlt_TRED_a01';
-			TeamTextures[2] = Texture'ASMDAlt_TRED_a02';
-			TeamTextures[3] = Texture'ASMDAlt_TRED_a03';
+			Texture=Texture'ASMDAlt_TRED_a00';
 			break;
 		case 1:
-			TeamTextures[0] = Texture'ASMDAlt_TBLUE_a00';
-			TeamTextures[1] = Texture'ASMDAlt_TBLUE_a01';
-			TeamTextures[2] = Texture'ASMDAlt_TBLUE_a02';
-			TeamTextures[3] = Texture'ASMDAlt_TBLUE_a03';
+			Texture=Texture'ASMDAlt_TBLUE_a00';
 			break;
 		case 2:
-			TeamTextures[0] = Texture'ASMDAlt_TGREEN_a00';
-			TeamTextures[1] = Texture'ASMDAlt_TGREEN_a01';
-			TeamTextures[2] = Texture'ASMDAlt_TGREEN_a02';
-			TeamTextures[3] = Texture'ASMDAlt_TGREEN_a03';
+			Texture=Texture'ASMDAlt_TGREEN_a00';
 			break;
 		case 3:
-			TeamTextures[0] = Texture'ASMDAlt_TGOLD_a00';
-			TeamTextures[1] = Texture'ASMDAlt_TGOLD_a01';
-			TeamTextures[2] = Texture'ASMDAlt_TGOLD_a02';
-			TeamTextures[3] = Texture'ASMDAlt_TGOLD_a03';
+			Texture=Texture'ASMDAlt_TGOLD_a00';
 			break;
 		default:
 			bTeamColor=False;
@@ -98,15 +82,9 @@ simulated function applyTeamColor()
 
 simulated function Timer()
 {
-	if(bTeamColor && !bTeamColorDone)
-	{
-		applyTeamColor();
-		bTeamColorDone=True;
-	}
 	if(bTeamColor)
 	{
-		Texture = TeamTextures[currTx%4];
-		currTx++;
+		applyTeamColor();
 	}
 }
 
