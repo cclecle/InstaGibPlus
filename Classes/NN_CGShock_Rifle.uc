@@ -58,9 +58,7 @@ simulated final function WeaponSettingsRepl GetWeaponSettings() {
 simulated event Tick( float DeltaTime )
 {
 	local bbPlayer bbP;
-	
 	super.Tick(DeltaTime);
-	
 	if (Level.NetMode != NM_DedicatedServer) {
 		bbP = bbPlayer(Owner);
 		if (bbP!=None) {
@@ -76,11 +74,11 @@ simulated event Tick( float DeltaTime )
 simulated function bool UpdateWeaponSkin(bbPlayer bbP) {
 	local int 	iTeamIdx;
 
-	if (bbP.Settings.bTeamColoredShockRifle)
+	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle))
 		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
 	
 	if(bTeamColor) {
-		if(Pawn(Owner).PlayerReplicationInfo==None) 
+		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None) 
 			return False;
 		iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
 		if(bNetOwner)
@@ -193,9 +191,6 @@ simulated function bool ClientFire(float Value)
 		return Super.ClientFire(Value);
 
 	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientFire(self);
-
-	if (AmmoType == None)
-		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
 
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
@@ -395,17 +390,20 @@ function Fire( float Value )
 {
 	local bbPlayer bbP;
 
-	if (Owner.IsA('Bot'))
-	{
-		Super.Fire(Value);
-		return;
-	}
-
 	bbP = bbPlayer(Owner);
 	if (bbP != None && bNewNet && Value < 1)
 		return;
 		
-	Super.Fire(Value);
+	GotoState('NormalFire');
+	bCanClientFire = true;
+	bPointing=True;
+	ClientFire(value);
+	if ( bRapidFire || (FiringSpeed > 0) )
+		Pawn(Owner).PlayRecoil(FiringSpeed);
+	if ( bInstantHit )
+		TraceFire(0.0);
+	else
+		ProjectileFire(ProjectileClass, ProjectileSpeed, bWarnTarget);
 }
 
 simulated function PlayFiring()
@@ -424,8 +422,6 @@ simulated function PlayAltFiring()
 	
 function AltFire( float Value )
 {
-	local actor HitActor;
-	local vector HitLocation, HitNormal, Start;
 	local bbPlayer bbP;
 	local NN_ShockProjOwnerHidden NNSP;
 
@@ -442,29 +438,9 @@ function AltFire( float Value )
 	if ( Owner == None )
 		return;
 
-	if ( Owner.IsA('Bot') ) //make sure won't blow self up
-	{
-		Start = Owner.Location + CalcDrawOffset() + FireOffset.Z * vect(0,0,1);
-		if ( Pawn(Owner).Enemy != None )
-			HitActor = Trace(HitLocation, HitNormal, Start + 250 * Normal(Pawn(Owner).Enemy.Location - Start), Start, false, vect(12,12,12));
-		else
-			HitActor = self;
-		if ( HitActor != None )
-		{
-			Global.AltFire(Value);
-			return;
-		}
-	}
-	
 	GotoState('AltFiring');
 	bCanClientFire = true;
-	if ( Owner.IsA('Bot') )
-	{
-		if ( Owner.IsInState('TacticalMove') && (Owner.Target == Pawn(Owner).Enemy)
-		 && (Owner.Physics == PHYS_Walking) && !Bot(Owner).bNovice
-		 && (FRand() * 6 < Pawn(Owner).Skill) )
-			Pawn(Owner).SpecialFire();
-	}
+
 	bPointing=True;
 	ClientAltFire(value);
 	if (bNewNet)
@@ -719,14 +695,12 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	
 	if ( NN_ShockProjOwnerHidden(Other)!=None )
 	{
-		//AmmoType.UseAmmo(1);
 		Other.SetOwner(Owner);
 		NN_ShockProjOwnerHidden(Other).SuperExplosion();
 		bCombo=True;
 	}
 	else if ( NN_ShockProj(Other)!=None )
 	{
-		//AmmoType.UseAmmo(1);
 		NN_ShockProj(Other).SuperExplosion();
 		bCombo=True;
 	}
@@ -931,10 +905,10 @@ auto state Pickup
 
 defaultproperties
 {
+	bNewNet=True
 	ThirdPersonMesh=LodMesh'Botpack.ASMD2hand'
 	AltProjectileClass=Class'NN_CGShock_Proj'
 	AltProjectileHiddenClass=Class'NN_CGShock_ProjOwnerHidden'
-	bNewNet=True
 	PickupViewScale=1.750000
 	ST_MyDamageType=jolted
 	hitdamage=1000

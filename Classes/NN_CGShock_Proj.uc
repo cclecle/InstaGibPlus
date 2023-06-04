@@ -61,7 +61,7 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 	if(Pawn(Owner).PlayerReplicationInfo==None)
 		return False;
 	
-	if (bbP.Settings.cShockBeam == 2) {
+	if ((bbP.Settings.cShockBeam == 2)||(bbP.Settings.cShockBeam == 4)) {
 		switch(Pawn(Owner).PlayerReplicationInfo.Team) {
 			case 0:
 				Texture=Texture'ASMDAlt_TRED_a00';
