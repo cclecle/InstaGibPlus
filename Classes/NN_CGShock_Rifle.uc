@@ -212,6 +212,7 @@ simulated function bool ClientFire(float Value)
 		}
 		else
 		{
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return False;
 		}
 	}
@@ -300,6 +301,7 @@ simulated function bool ClientAltFire(float Value) {
 		}
 		else
 		{
+			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return False;
 		}
 	}
