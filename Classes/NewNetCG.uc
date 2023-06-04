@@ -26,7 +26,7 @@ function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 
 defaultproperties
 {
-     WeaponName=NN_ComboShockRifle
+     WeaponName=NN_CGShock_Rifle
      AmmoName=ShockCore
-     DefaultWeapon=class'NN_ComboShockRifle'
+     DefaultWeapon=class'NN_CGShock_Rifle'
 }

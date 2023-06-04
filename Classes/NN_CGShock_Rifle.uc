@@ -1,4 +1,4 @@
-class NN_ComboShockRifle extends ShockRifle;
+class NN_CGShock_Rifle extends ShockRifle;
 
 #exec TEXTURE IMPORT NAME=TRED_ASMD_t  FILE=Textures\ShockRifle\TRED_ASMD_t.PCX  LODSET=2
 #exec TEXTURE IMPORT NAME=TRED_ASMD_t1 FILE=Textures\ShockRifle\TRED_ASMD_t1.PCX LODSET=2
@@ -33,7 +33,7 @@ var name ST_MyDamageType;
 var bool 	bTeamColor;
 var bool 	bTeamColorPrev;
 
-var class<NN_CGShockProjOwnerHidden> AltProjectileHiddenClass;
+var class<NN_CGShock_ProjOwnerHidden> AltProjectileHiddenClass;
 
 simulated event Tick( float DeltaTime )
 {
@@ -254,7 +254,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local PlayerPawn PlayerOwner;
 	local bbPlayer bbP;
 	local Projectile Proj;
-	local NN_ComboShockProj ST_Proj;
+	local NN_CGShock_Proj ST_Proj;
 	
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
@@ -280,7 +280,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
 	
 	Proj = Spawn(ProjClass,Owner,, Start,AdjustedAim);
-	ST_Proj = NN_ComboShockProj(Proj);
+	ST_Proj = NN_CGShock_Proj(Proj);
 	
 	return Proj;
 }
@@ -290,7 +290,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	local Vector Start, X,Y,Z;
 	local PlayerPawn PlayerOwner;
 	local Projectile Proj;
-	local NN_ComboShockProj ST_Proj;
+	local NN_CGShock_Proj ST_Proj;
 	local int ProjIndex;
 	local bbPlayer bbP;
 	
@@ -311,7 +311,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	Proj = Spawn(ProjClass,Owner,, Start,bbP.ViewRotation);
 	Proj.RemoteRole = ROLE_None;
 	
-	ST_Proj = NN_ComboShockProj(Proj);
+	ST_Proj = NN_CGShock_Proj(Proj);
 	ProjIndex = bbP.xxNN_AddProj(Proj);
 
 	if (ST_Proj != None)
@@ -865,8 +865,8 @@ auto state Pickup
 defaultproperties
 {
 	ThirdPersonMesh=LodMesh'Botpack.ASMD2hand'
-	AltProjectileClass=Class'NN_ComboShockProj'
-	AltProjectileHiddenClass=Class'NN_CGShockProjOwnerHidden'
+	AltProjectileClass=Class'NN_CGShock_Proj'
+	AltProjectileHiddenClass=Class'NN_CGShock_ProjOwnerHidden'
 	bNewNet=True
 	PickupViewScale=1.750000
 	ST_MyDamageType=jolted

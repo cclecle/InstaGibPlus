@@ -1,4 +1,4 @@
-class NN_ComboShock_ShockExplo extends NN_ShockExplo;
+class NN_CGShock_ShockExplo extends NN_ShockExplo;
 
 #exec TEXTURE IMPORT NAME=TRED_ShockExplo_A00 FILE=Textures\ShockExplo\TRED_ShockExplo.asmdex_a00.PCX LODSET=2
 #exec TEXTURE IMPORT NAME=TRED_ShockExplo_A01 FILE=Textures\ShockExplo\TRED_ShockExplo.asmdex_a01.PCX LODSET=2
@@ -54,11 +54,20 @@ class NN_ComboShock_ShockExplo extends NN_ShockExplo;
 
 var int 	iTeamIdx;
 var bool 	bTeamColor;
+var bool 	bTeamColorApplied;
+var float	dAnnimTime;
+
+const dAnnimPeriod=0.025;
+const dMaxLightBrightness=255;
 
 simulated function PostBeginPlay()
 {
 	Super.PostBeginPlay();
-	setTimer(0.025,False);
+	if ( Level.NetMode != NM_DedicatedServer )
+	{
+		dAnnimTime=0;
+		setTimer(dAnnimPeriod,True);
+	}
 }
 
 
@@ -67,28 +76,65 @@ function applyTeamColor() {
 		switch(iTeamIdx) {
 			case 0:
 				Texture=Texture'TRED_ShockExplo_A00';
+				LightHue=255;
+				LightSaturation=76;
 				break;
 			case 1:
 				Texture=Texture'TBLUE_ShockExplo_A00';
+				LightHue=170;
+				LightSaturation=76;
 				break;
 			case 2:
-				Texture=Texture'TGOLD_ShockExplo_A00';
+				Texture=Texture'TGREEN_ShockExplo_A00';
+				LightHue=85;
+				LightSaturation=64;
 				break;
 			case 3:
-				Texture=Texture'TGREEN_ShockExplo_A00';
+				Texture=Texture'TGOLD_ShockExplo_A00';
+				LightHue=22;
+				LightSaturation=50;
 				break;
 			default:
 				Texture=Texture'Botpack.ShockExplo.asmdex_a00';
+				LightHue=165;
+				LightSaturation=72;
 				break;
 		}
 	}
 	else {
 		Texture=Texture'Botpack.ShockExplo.asmdex_a00';
+		LightHue=165;
+		LightSaturation=72;
 	}
 }
 
 simulated function Timer()
 {
-	applyTeamColor();
+	if ( Level.NetMode != NM_DedicatedServer )
+	{
+		if(!bTeamColorApplied) {
+			applyTeamColor();
+			bTeamColorApplied=True;
+		}
+		
+		if( dAnnimTime < LifeSpan/2)
+		{
+			LightBrightness=dAnnimTime*2*dMaxLightBrightness/LifeSpan;
+		}
+		else if(dAnnimTime < LifeSpan)
+		{
+			LightBrightness=-(dAnnimTime-(LifeSpan/2))*2*dMaxLightBrightness/LifeSpan + 2*dMaxLightBrightness;
+		}
+		else
+		{
+			LightBrightness=0;
+		}
+		dAnnimTime += dAnnimPeriod;
+	}
+}
+
+defaultproperties
+{
+	LightType=LT_Pulse
 }
 
