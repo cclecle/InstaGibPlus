@@ -48,19 +48,16 @@ simulated event Tick( float DeltaTime )
 		if (bbP!=None) {
 			bTeamColor=bbP.Settings.bTeamColoredShockRifle;
 			if(bTeamColorPrev!=bTeamColor) {
-				if(UpdateWeaponSkin()) bTeamColorPrev = bTeamColor;
+				if(UpdateWeaponSkin(bbP)) bTeamColorPrev = bTeamColor;
 			}
 		}
 	}
 }
 
 // try to update WeaponSkins, return True on success 
-simulated function bool UpdateWeaponSkin() {
-	local bbPlayer bbP;
+simulated function bool UpdateWeaponSkin(bbPlayer bbP) {
 	local int 	iTeamIdx;
-	
-	bbP = bbPlayer(Owner);
-	
+
 	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle))
 		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
 	

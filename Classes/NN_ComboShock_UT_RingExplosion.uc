@@ -5,46 +5,78 @@ class NN_ComboShock_UT_RingExplosion extends NN_UT_RingExplosion;
 #exec TEXTURE IMPORT NAME=TGOLD_RING FILE=Textures\ShockProj\TGOLD_RING.PCX LODSET=2
 #exec TEXTURE IMPORT NAME=TGREEN_RING FILE=Textures\ShockProj\TGREEN_RING.PCX LODSET=2
 
-var bool 	bTeamColor;
-var int 	iTeamIdx;
 var bool 	PostSpawnEffect;
+var int 	iTeamIdx;
+
 
 replication
 {
-	reliable if(Role == ROLE_Authority)
-		bTeamColor,iTeamIdx;
+	unreliable if ((Role == ROLE_Authority) && bNetOwner)
+		iTeamIdx;
 }
 
 simulated function PostBeginPlay()
 {
 	Super.PostBeginPlay();
 	SetTimer(0.025, True);
+	
 	log("NN_ComboShock_UT_RingExplosion -> PostBeginPlay()");
-	log("bTeamColor:"@bTeamColor);
-	log("iTeamIdx:"@iTeamIdx);
+	log(Owner);
+	//log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
 }
 
+/*
 simulated function SpawnEffects()
 {
 	// Delay real SpawnEffects to let replication set bTeamColor/iTeamIdx
 	PostSpawnEffect = True;
+	
 	log("NN_ComboShock_UT_RingExplosion -> SpawnEffects()");
 	log("bTeamColor:"@bTeamColor);
 	log("iTeamIdx:"@iTeamIdx);
 }
-
+*/
+	
 simulated function Timer()
 {
-	local NN_ComboShock_ShockExplo A;
+	//local NN_ComboShock_ShockExplo A;
+	local bbPlayer bbP;
 	
 	log("NN_ComboShock_UT_RingExplosion -> Timer()");
-	log("bTeamColor:"@bTeamColor);
-	log("iTeamIdx:"@iTeamIdx);
+	log(Owner);
+	//log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
 	
-	if(bTeamColor)
+	if(Owner!=None) {
+		bbP = bbPlayer(Owner);
+		if (bbP!=None) {
+			if(applyTeamColor(bbP)) {
+					setTimer(0,False);
+			}
+		}
+	}
+
+	/*
+	if(PostSpawnEffect)
 	{
-		switch(iTeamIdx)
-		{
+		A = NN_ComboShock_ShockExplo(Spawn(ClsNN_ShockExplo));
+		A.RemoteRole = ROLE_None;
+		A.bTeamColor = bTeamColor;
+		A.iTeamIdx = iTeamIdx;
+		PostSpawnEffect=False;
+	}*/
+}
+
+simulated function bool applyTeamColor(bbPlayer bbP) {
+	log("NN_ComboShockProj->applyTeamColor()");
+	log("bTeamColoredShockRifle:"@bbP.Settings.bTeamColoredShockRifle);
+	if(Pawn(Owner).PlayerReplicationInfo==None)
+		return False;
+	
+	if (bbP.Settings.bTeamColoredShockRifle) {
+		//bTeamColor=True;
+		switch(iTeamIdx) {
 			case 0:
 				MultiSkins[0]=Texture'TRED_RING';
 				break;
@@ -61,15 +93,13 @@ simulated function Timer()
 				MultiSkins[0]=None;
 				break;
 		}
+	}
+	else {
+		MultiSkins[0]=None;
+		log("NORMAL2");
+	}
 	
-	}
-	if(PostSpawnEffect)
-	{
-		A = NN_ComboShock_ShockExplo(Spawn(ClsNN_ShockExplo));
-		A.RemoteRole = ROLE_None;
-		A.bTeamColor = bTeamColor;
-		A.iTeamIdx = iTeamIdx;
-	}
+	return True;
 }
 
 defaultproperties

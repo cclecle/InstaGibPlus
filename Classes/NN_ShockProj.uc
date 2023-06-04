@@ -6,26 +6,6 @@
 
 class NN_ShockProj extends ShockProj;
 
-#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a00 FILE=Textures\ShockProj\ASMDAlt_TRED_a00.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a01 FILE=Textures\ShockProj\ASMDAlt_TRED_a01.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a02 FILE=Textures\ShockProj\ASMDAlt_TRED_a02.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TRED_a03 FILE=Textures\ShockProj\ASMDAlt_TRED_a03.pcx
-
-#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a00 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a00.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a01 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a01.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a02 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a02.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TBLUE_a03 FILE=Textures\ShockProj\ASMDAlt_TBLUE_a03.pcx
-
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a00 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a00.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a01 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a01.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a02 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a02.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGREEN_a03 FILE=Textures\ShockProj\ASMDAlt_TGREEN_a03.pcx
-
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a00 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a00.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a01 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a01.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a02 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a02.pcx
-#exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a03 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a03.pcx
-
 
 // For Standstill combo Special
 var vector StartLocation;
@@ -36,16 +16,6 @@ var int DamageMultiplierExplode;
 var int DamageMultiplierSuperExplode;
 var int DamageMultiplierSuperDuperExplode;
 
-var bool 	bTeamColor;
-var int 	iTeamIdx;
-
-
-replication
-{
-	reliable if(Role == ROLE_Authority)
-		bTeamColor,iTeamIdx;
-}
-
 simulated function PostBeginPlay()
 {
 	Super.PostBeginPlay();
@@ -54,40 +24,7 @@ simulated function PostBeginPlay()
 		StartLocation = Instigator.Location;
 	else if (Owner != None)
 		StartLocation = Owner.Location;
-
-	SetTimer(0.025, False);
 }
-
-simulated function applyTeamColor()
-{
-	switch(iTeamIdx)
-	{
-		case 0:
-			Texture=Texture'ASMDAlt_TRED_a00';
-			break;
-		case 1:
-			Texture=Texture'ASMDAlt_TBLUE_a00';
-			break;
-		case 2:
-			Texture=Texture'ASMDAlt_TGREEN_a00';
-			break;
-		case 3:
-			Texture=Texture'ASMDAlt_TGOLD_a00';
-			break;
-		default:
-			bTeamColor=False;
-			break;
-	}
-}
-
-simulated function Timer()
-{
-	if(bTeamColor)
-	{
-		applyTeamColor();
-	}
-}
-
 
 function SuperExplosion()	// aka, combo.
 {

@@ -71,7 +71,7 @@ simulated function PostBeginPlay()
 
 simulated function Timer()
 {
-		log("TIMERRR");
+		//log("TIMERRR");
 	if(bTeamColor)
 	{
 		log("SETTT COLOURRR");

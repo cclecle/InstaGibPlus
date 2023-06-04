@@ -33,33 +33,34 @@ var name ST_MyDamageType;
 var bool 	bTeamColor;
 var bool 	bTeamColorPrev;
 
+var class<NN_CGShockProjOwnerHidden> AltProjectileHiddenClass;
+
 simulated event Tick( float DeltaTime )
 {
 	local bbPlayer bbP;
+	
 	super.Tick(DeltaTime);
+	
 	if (Level.NetMode != NM_DedicatedServer) {
 		bbP = bbPlayer(Owner);
 		if (bbP!=None) {
 			bTeamColor=bbP.Settings.bTeamColoredShockRifle;
 			if(bTeamColorPrev!=bTeamColor) {
-				if(UpdateWeaponSkin()) bTeamColorPrev = bTeamColor;
+				if(UpdateWeaponSkin(bbP)) bTeamColorPrev = bTeamColor;
 			}
 		}
 	}
 }
 
 // try to update WeaponSkins, return True on success 
-simulated function bool UpdateWeaponSkin() {
-	local bbPlayer bbP;
+simulated function bool UpdateWeaponSkin(bbPlayer bbP) {
 	local int 	iTeamIdx;
-	
-	bbP = bbPlayer(Owner);
-	
-	if ((bbP!=None) && (bbP.Settings.bTeamColoredShockRifle))
+
+	if (bbP.Settings.bTeamColoredShockRifle)
 		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
 	
 	if(bTeamColor) {
-		if( (Pawn(Owner)==None) ||  Pawn(Owner).PlayerReplicationInfo==None)
+		if(Pawn(Owner).PlayerReplicationInfo==None) 
 			return False;
 		iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
 		if(bNetOwner)
@@ -118,11 +119,11 @@ simulated function bool UpdateWeaponSkin() {
 	
 	return True;
 }
-	
+
 simulated function PlaySelect()
 {
 	Class'NN_WeaponFunctions'.static.PlaySelect( self);
-	UpdateWeaponSkin();
+	//UpdateWeaponSkin();
 }
 
 simulated function RenderOverlays(Canvas Canvas)
@@ -209,6 +210,13 @@ simulated function bool ClientAltFire(float Value) {
 	local bbPlayer bbP;
 	local bool Result;
 
+
+	log("");
+	log("NN_ComboShockRifle->ClientAltFire()");
+	log("Owner:"@Owner);
+	log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
+	
 	if (Owner.IsA('Bot'))
 		return Super.ClientAltFire(Value);
 
@@ -255,6 +263,12 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local Projectile Proj;
 	local NN_ComboShockProj ST_Proj;
 	
+	log("");
+	log("NN_ComboShockRifle->ProjectileFire()");
+	log("Owner:"@Owner);
+	log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
+	
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
 
@@ -282,6 +296,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	ST_Proj = NN_ComboShockProj(Proj);
 	if (ST_Proj != None)
 	{
+		/*
 		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
 		{
 			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
@@ -290,6 +305,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
 			}
 		}
+		*/
 	}
 	
 	return Proj;
@@ -303,7 +319,13 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	local NN_ComboShockProj ST_Proj;
 	local int ProjIndex;
 	local bbPlayer bbP;
-
+	
+	log("");
+	log("NN_ComboShockRifle->NN_ProjectileFire()");
+	log("Owner:"@Owner);
+	log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
+	
 	if (Owner.IsA('Bot'))
 		return None;
 
@@ -312,7 +334,10 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
 		return None;
-
+/*
+	if ((bbP.Settings.bTeamColoredShockRifle))
+		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
+*/
 	GetAxes(bbP.ViewRotation,X,Y,Z);
 	Start = Owner.Location + CDO + FireOffset.X * X + yMod * Y + FireOffset.Z * Z;
 	if ( PlayerOwner != None )
@@ -327,6 +352,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	if (ST_Proj != None)
 	{
 		ST_Proj.zzNN_ProjIndex 	= ProjIndex;
+		/*
 		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
 		{
 			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
@@ -334,7 +360,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 				ST_Proj.bTeamColor 	= bTeamColor;
 				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
 			}
-		}
+		}*/
 	}
 		
 	bbP.xxNN_AltFire(Level.TimeSeconds, ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
@@ -379,6 +405,13 @@ function AltFire( float Value )
 	local bbPlayer bbP;
 	local NN_ShockProjOwnerHidden NNSP;
 
+
+	log("");
+	log("NN_ComboShockRifle->AltFire()");
+	log("Owner:"@Owner);
+	log("bTeamColor:"@bTeamColor);
+	//log("iTeamIdx:"@iTeamIdx);
+
 	if (Owner.IsA('Bot'))
 	{
 		Super.AltFire(Value);
@@ -420,7 +453,7 @@ function AltFire( float Value )
 		ClientAltFire(value);
 		if (bNewNet)
 		{
-			NNSP = NN_ShockProjOwnerHidden(ProjectileFire(Class'NN_ShockProjOwnerHidden', AltProjectileSpeed, bAltWarnTarget));
+			NNSP = NN_ShockProjOwnerHidden(ProjectileFire(AltProjectileHiddenClass, AltProjectileSpeed, bAltWarnTarget));
 			if (NNSP != None)
 			{
 				NNSP.NN_OwnerPing = float(Owner.ConsoleCommand("GETPING"));
@@ -723,14 +756,14 @@ function ProcessTraceHit(Actor Other, Vector HitLocation, Vector HitNormal, Vect
 	
 	if ( NN_ShockProjOwnerHidden(Other)!=None )
 	{
-		AmmoType.UseAmmo(1);
+		//AmmoType.UseAmmo(1);
 		Other.SetOwner(Owner);
 		NN_ShockProjOwnerHidden(Other).SuperExplosion();
 		bCombo=True;
 	}
 	else if ( NN_ShockProj(Other)!=None )
 	{
-		AmmoType.UseAmmo(1);
+		//AmmoType.UseAmmo(1);
 		NN_ShockProj(Other).SuperExplosion();
 		bCombo=True;
 	}
@@ -874,6 +907,7 @@ defaultproperties
 {
 	ThirdPersonMesh=LodMesh'Botpack.ASMD2hand'
 	AltProjectileClass=Class'NN_ComboShockProj'
+	AltProjectileHiddenClass=Class'NN_CGShockProjOwnerHidden'
 	bNewNet=True
 	PickupViewScale=1.750000
 	ST_MyDamageType=jolted

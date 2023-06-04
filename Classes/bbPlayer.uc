@@ -9291,7 +9291,7 @@ exec function TeamColoredShockRifle() {
 	Settings.bTeamColoredShockRifle = !Settings.bTeamColoredShockRifle;
 	IGPlus_SaveSettings();
 	if (Settings.bTeamColoredShockRifle)
-		ClientMessage("SockRifle are now Team Colored!", 'IGPlus');
+		ClientMessage("SockRifles ar now Team Colored!", 'IGPlus');
 	else
 		ClientMessage("SockRifle are now NOT Team Colored!", 'IGPlus');
 }

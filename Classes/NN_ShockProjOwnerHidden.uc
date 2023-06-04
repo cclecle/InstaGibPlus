@@ -75,7 +75,9 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		ForEach AllActors(class'PlayerPawn', P)
+		ForEach AllActors(class'PlayerPawn', P) {
+			if(MessagingSpectator(P)!=None) continue;
+			if(!P.bIsPlayer) continue;
 			if (P != Instigator) {
 				if (Dmg > 60)
 					CR = P.Spawn(class'ut_RingExplosion3',P,, HitLocation+HitNormal*8,rotator(HitNormal));
@@ -83,6 +85,7 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 					CR = P.Spawn(class'ut_RingExplosion',P,, HitLocation+HitNormal*8,rotator(Velocity));
 				CR.bOnlyOwnerSee = True;
 			}
+		}
 	}
 }
 
@@ -106,8 +109,7 @@ simulated function DoSuperExplosion()
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		ForEach AllActors(class'Pawn', P)
-		{
+		ForEach AllActors(class'Pawn', P) {
 			if(MessagingSpectator(P)!=None) continue;
 			if(!P.bIsPlayer) continue;
 			
