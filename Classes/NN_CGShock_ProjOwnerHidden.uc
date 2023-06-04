@@ -27,6 +27,19 @@ simulated function PostBeginPlay()
 		setTimer(0.025,True);
 }
 
+simulated function Destroyed()
+{
+	local bbPlayer bbP;
+
+	if (Level.NetMode == NM_Client)
+	{
+		bbP = bbPlayer(Owner);
+		if(bbP!=None) {
+			bbP.xxNN_RemoveProj(zzNN_ProjIndex);
+		}
+	}
+}
+
 simulated function Timer()
 {
 	local bbPlayer bbP;
@@ -48,7 +61,7 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 	if(Pawn(Owner).PlayerReplicationInfo==None)
 		return False;
 	
-	if (bbP.Settings.bTeamColoredShockRifle) {
+	if (bbP.Settings.cShockBeam == 2) {
 		switch(Pawn(Owner).PlayerReplicationInfo.Team) {
 			case 0:
 				Texture=Texture'ASMDAlt_TRED_a00';

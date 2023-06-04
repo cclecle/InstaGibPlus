@@ -30,10 +30,30 @@ var float yMod;
 var float LastFiredTime;
 var name ST_MyDamageType;
 
-var bool 	bTeamColor;
-var bool 	bTeamColorPrev;
+var bool	bTeamColor;
+var bool	bTeamColorPrev;
 
 var class<NN_CGShock_ProjOwnerHidden> AltProjectileHiddenClass;
+
+var WeaponSettingsRepl WSettings;
+
+simulated final function WeaponSettingsRepl FindWeaponSettings() {
+	local WeaponSettingsRepl S;
+
+	foreach AllActors(class'WeaponSettingsRepl', S)
+		if(S.WSName == "WeaponSettingsNewNet") return S;
+
+	return none;
+}
+
+simulated final function WeaponSettingsRepl GetWeaponSettings() {
+	if (WSettings != none)
+		return WSettings;
+
+	WSettings = FindWeaponSettings();
+	return WSettings;
+}
+
 
 simulated event Tick( float DeltaTime )
 {
@@ -123,7 +143,6 @@ simulated function bool UpdateWeaponSkin(bbPlayer bbP) {
 simulated function PlaySelect()
 {
 	Class'NN_WeaponFunctions'.static.PlaySelect( self);
-	//UpdateWeaponSkin();
 }
 
 simulated function RenderOverlays(Canvas Canvas)
@@ -161,6 +180,10 @@ simulated function yModInit()
 	CDO = class'NN_WeaponFunctions'.static.IGPlus_CalcDrawOffset(P, self);
 }
 
+simulated function bool CheckClientCanFire() {
+	return True;
+}
+	
 simulated function bool ClientFire(float Value)
 {
 	local bbPlayer bbP;
@@ -181,12 +204,7 @@ simulated function bool ClientFire(float Value)
 			class'NN_WeaponFunctions'.static.IGPlus_AfterClientFire(self);
 			return false;
 		}
-		if ( (AmmoType == None) && (AmmoName != None) )
-		{
-			// ammocheck
-			GiveAmmo(Pawn(Owner));
-		}
-		if ( AmmoType.AmmoAmount > 0 )
+		if ( CheckClientCanFire() )
 		{
 			Instigator = Pawn(Owner);
 			GotoState('ClientFiring');
@@ -197,6 +215,10 @@ simulated function bool ClientFire(float Value)
 			NN_TraceFire();
 			LastFiredTime = Level.TimeSeconds;
 		}
+		else
+		{
+			return False;
+		}
 	}
 	Result = Super.ClientFire(Value);
 
@@ -205,6 +227,54 @@ simulated function bool ClientFire(float Value)
 	return Result;
 }
 
+simulated function bool CheckClientCanAltFire() {
+	local int		NbFoundShockProj;
+	local ShockProj FirstFoundProj,Proj;
+	
+	if(	(GetWeaponSettings().CGShock_iAntiSpamMethod==0) 
+		|| (GetWeaponSettings().CGShock_iMaxShock <= 0))
+		return True;
+	
+	if (RemoteRole == ROLE_Authority) {
+		foreach AllActors(Class'ShockProj', Proj) {
+			if((Proj.Instigator == Pawn(Owner)) && !Proj.bOwnerNoSee)
+			{
+				if(FirstFoundProj==None) {
+					FirstFoundProj=Proj;
+				}
+				NbFoundShockProj++;
+			}
+		}
+	}
+	else
+	{
+		foreach AllActors(Class'ShockProj', Proj) {
+			if((Proj.Instigator == Pawn(Owner)) && Proj.bOwnerNoSee)
+			{
+				if(FirstFoundProj==None) {
+					FirstFoundProj=Proj;
+				}
+				NbFoundShockProj++;
+			}
+		}
+	}
+
+	if(GetWeaponSettings().CGShock_iAntiSpamMethod==1) {
+		if((NbFoundShockProj >= GetWeaponSettings().CGShock_iMaxShock) 
+			&& (FirstFoundProj!=None)) {
+			FirstFoundProj.Destroy();
+		}
+		return True;
+	}
+	else if(GetWeaponSettings().CGShock_iAntiSpamMethod==2) {
+		return (NbFoundShockProj < GetWeaponSettings().CGShock_iMaxShock);
+	}
+	else
+		return True;
+	
+	return True;
+}
+	
 simulated function bool ClientAltFire(float Value) {
 
 	local bbPlayer bbP;
@@ -215,9 +285,6 @@ simulated function bool ClientAltFire(float Value) {
 
 	class'NN_WeaponFunctions'.static.IGPlus_BeforeClientAltFire(self);
 
-	if (AmmoType == None)
-		AmmoType = Ammo(Pawn(Owner).FindInventoryType(AmmoName));
-
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
@@ -225,12 +292,8 @@ simulated function bool ClientAltFire(float Value) {
 			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return false;
 		}
-		if ( (AmmoType == None) && (AmmoName != None) )
-		{
-			// ammocheck
-			GiveAmmo(Pawn(Owner));
-		}
-		if ( AmmoType.AmmoAmount > 0 )
+
+		if ( CheckClientCanAltFire() )
 		{
 			Instigator = Pawn(Owner);
 			GotoState('AltFiring');
@@ -239,6 +302,10 @@ simulated function bool ClientAltFire(float Value) {
 			bPointing=True;
 			NN_ProjectileFire(AltProjectileClass, AltProjectileSpeed, bAltWarnTarget);
 			LastFiredTime = Level.TimeSeconds;
+		}
+		else
+		{
+			return False;
 		}
 	}
 	Result = Super.ClientAltFire(Value);
@@ -255,7 +322,7 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local bbPlayer bbP;
 	local Projectile Proj;
 	local NN_CGShock_Proj ST_Proj;
-	
+
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
 
@@ -289,10 +356,10 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 {
 	local Vector Start, X,Y,Z;
 	local PlayerPawn PlayerOwner;
+	local bbPlayer bbP;
 	local Projectile Proj;
 	local NN_CGShock_Proj ST_Proj;
 	local int ProjIndex;
-	local bbPlayer bbP;
 	
 	if (Owner.IsA('Bot'))
 		return None;
@@ -349,6 +416,7 @@ simulated function PlayFiring()
 
 simulated function PlayAltFiring()
 {
+
 	PlayOwnedSound(AltFireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
 	PlayAnim('Fire2', 0.3 + 0.3 * FireAdjust,0.05);
 }
@@ -383,11 +451,11 @@ function AltFire( float Value )
 			HitActor = self;
 		if ( HitActor != None )
 		{
-			Global.Fire(Value);
+			Global.AltFire(Value);
 			return;
 		}
 	}
-
+	
 	GotoState('AltFiring');
 	bCanClientFire = true;
 	if ( Owner.IsA('Bot') )
@@ -414,7 +482,6 @@ function AltFire( float Value )
 		Pawn(Owner).PlayRecoil(FiringSpeed);
 		ProjectileFire(AltProjectileClass, AltProjectileSpeed, bAltWarnTarget);
 	}
-
 }
 
 state ClientFiring
@@ -876,5 +943,4 @@ defaultproperties
 	DeathMessage="%k electrified %o with the %w."
 	PickupMessage="You got the Combo Shock Rifle."
 	ItemName="Combo Shock Rifle"
-
 }

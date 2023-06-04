@@ -4527,7 +4527,6 @@ function NN_HurtRadius( actor ActualSelf, class<Weapon> WeapClass, float DamageA
 	ActualSelf.bHurtEntry = true;
 	foreach VisibleCollidingActors( class 'Actor', Victims, DamageRadius, HitLocation )
 	{
-		log(Victims);
 		if ( Victims != ActualSelf && (!bNoSelf || Victims != Self) )
 		{
 			if (Victims == zzClientTTarget)

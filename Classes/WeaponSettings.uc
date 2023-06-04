@@ -1,4 +1,5 @@
-class WeaponSettings extends Object perobjectconfig;
+class WeaponSettings extends Object
+	perobjectconfig;
 
 var config bool bReplaceImpactHammer;
 var config bool bReplaceTranslocator;
@@ -84,8 +85,8 @@ var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
 
-var config float ComboShockBeamDamage;
-var config float ComboShockBeamMomentum;
+var config int CGShock_iAntiSpamMethod;
+var config int CGShock_iMaxShock;
 
 var config float BioSelectTime;
 var config float BioDownTime;
@@ -214,8 +215,8 @@ defaultproperties
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
 	
-	ComboShockBeamDamage=600
-	ComboShockBeamMomentum=1.0
+	CGShock_iAntiSpamMethod=0
+	CGShock_iMaxShock=0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333

@@ -1,5 +1,6 @@
 class WeaponSettingsRepl extends Actor;
 
+var string WSName;
 var float WarheadSelectTime;
 var float WarheadDownTime;
 
@@ -70,8 +71,8 @@ var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
 
-var float ComboShockBeamDamage;
-var float ComboShockBeamMomentum;
+var int CGShock_iAntiSpamMethod;
+var int CGShock_iMaxShock;
 
 var float BioSelectTime;
 var float BioDownTime;
@@ -116,6 +117,8 @@ var float TranslocatorHealth;
 
 replication {
 	reliable if (Role == ROLE_Authority)
+		WSName,
+		
 		WarheadSelectTime,
 		WarheadDownTime,
 
@@ -184,9 +187,9 @@ replication {
 		ShockComboDamage,
 		ShockComboMomentum,
 		ShockComboHurtRadius,
-		
-		ComboShockBeamDamage,
-		ComboShockBeamMomentum,
+
+		CGShock_iAntiSpamMethod,
+		CGShock_iMaxShock,
 
 		BioSelectTime,
 		BioDownTime,
@@ -423,6 +426,7 @@ simulated final function float TranslocatorDownAnimSpeed() {
 }
 
 function InitFromWeaponSettings(WeaponSettings S) {
+	WSName = string(S.Name);
 	WarheadSelectTime = S.WarheadSelectTime;
 	WarheadDownTime = S.WarheadDownTime;
 
@@ -493,8 +497,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
 	
-	ComboShockBeamDamage = S.ComboShockBeamDamage;
-	ComboShockBeamMomentum = S.ComboShockBeamMomentum;
+	CGShock_iAntiSpamMethod = S.CGShock_iAntiSpamMethod;
+	CGShock_iMaxShock = S.CGShock_iMaxShock;
 	
 	BioSelectTime = S.BioSelectTime;
 	BioDownTime = S.BioDownTime;
@@ -646,9 +650,9 @@ defaultproperties
 	ShockComboDamage=165
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
-	
-	ComboShockBeamDamage=600
-	ComboShockBeamMomentum=1.0
+
+	CGShock_iAntiSpamMethod=0
+	CGShock_iMaxShock=0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333

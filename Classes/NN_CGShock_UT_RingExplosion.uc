@@ -58,7 +58,7 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 	if(Pawn(Owner).PlayerReplicationInfo==None)
 		return False;
 	
-	if (bbP.Settings.bTeamColoredShockRifle) {
+	if (bbP.Settings.cShockBeam == 2) {
 		bTeamColor=True;
 		switch(iTeamIdx) {
 			case 0:
