@@ -294,19 +294,6 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	
 	Proj = Spawn(ProjClass,Owner,, Start,AdjustedAim);
 	ST_Proj = NN_ComboShockProj(Proj);
-	if (ST_Proj != None)
-	{
-		/*
-		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
-		{
-			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
-			{
-				ST_Proj.bTeamColor 	= bTeamColor;
-				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
-			}
-		}
-		*/
-	}
 	
 	return Proj;
 }
@@ -334,10 +321,7 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
 		return None;
-/*
-	if ((bbP.Settings.bTeamColoredShockRifle))
-		bTeamColor=bbP.Settings.bTeamColoredShockRifle;
-*/
+
 	GetAxes(bbP.ViewRotation,X,Y,Z);
 	Start = Owner.Location + CDO + FireOffset.X * X + yMod * Y + FireOffset.Z * Z;
 	if ( PlayerOwner != None )
@@ -352,15 +336,6 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	if (ST_Proj != None)
 	{
 		ST_Proj.zzNN_ProjIndex 	= ProjIndex;
-		/*
-		if(bTeamColor && Pawn(Owner).PlayerReplicationInfo != none)
-		{
-			if(Pawn(Owner).PlayerReplicationInfo.Team <= 4)
-			{
-				ST_Proj.bTeamColor 	= bTeamColor;
-				ST_Proj.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
-			}
-		}*/
 	}
 		
 	bbP.xxNN_AltFire(Level.TimeSeconds, ProjIndex, bbP.Location, bbP.Velocity, bbP.ViewRotation);
@@ -900,9 +875,7 @@ auto state Pickup
 		Super(Inventory).Landed(HitNormal);
 	}
 }
-/*
-		PlayerViewMesh=LodMesh'Botpack.sshockm'
-*/
+
 defaultproperties
 {
 	ThirdPersonMesh=LodMesh'Botpack.ASMD2hand'

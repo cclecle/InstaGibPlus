@@ -54,6 +54,10 @@ simulated function Explode(vector HitLocation,vector HitNormal)
 
 	if (bDeleteMe)
 		return;
+		
+	if(Owner==None)
+		Destroy();
+	
 	if (!bbPlayer(Owner).bNewNet)
 		HurtRadius(Damage, 70, MyDamageType, MomentumTransfer, Location );
 
@@ -146,7 +150,6 @@ simulated function DoSuperDuperExplosion()
 	local Actor CR;
 
 	if (RemoteRole < ROLE_Authority) {
-		//for (P = Level.PawnList; P != None; P = P.NextPawn)
 		ForEach AllActors(class'PlayerPawn', P)
 			if (P != Owner) {
 				CR = P.Spawn(Class'UT_SuperComboRing',P,'',Location, Pawn(Owner).ViewRotation);

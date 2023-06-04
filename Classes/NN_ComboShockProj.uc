@@ -20,8 +20,6 @@ class NN_ComboShockProj extends NN_ShockProj;
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a02 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a02.pcx
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a03 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a03.pcx
 
-//var bool 	bTeamColor;
-
 simulated function PostBeginPlay()
 {
 	log("NN_ComboShockProj->PostBeginPlay()");
@@ -50,7 +48,6 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 		return False;
 	
 	if (bbP.Settings.bTeamColoredShockRifle) {
-		//bTeamColor=True;
 		switch(Pawn(Owner).PlayerReplicationInfo.Team) {
 			case 0:
 				Texture=Texture'ASMDAlt_TRED_a00';
@@ -105,8 +102,6 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 	instRingExpl=Spawn(class'NN_ComboShock_UT_RingExplosion',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
 	instRingExpl.RemoteRole = ROLE_None;
 	instRingExpl.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
-	//instRingExpl.bTeamColor = bTeamColor;
-	//instRingExpl.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
 	
 	if (bbP != None)
 		bbP.xxClientDemoFix(None, class'NN_ComboShock_UT_RingExplosion',HitLocation+HitNormal*8,,, rotator(HitNormal));

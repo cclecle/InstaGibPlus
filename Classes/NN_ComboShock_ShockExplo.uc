@@ -52,31 +52,19 @@ class NN_ComboShock_ShockExplo extends NN_ShockExplo;
 #exec TEXTURE IMPORT NAME=TGREEN_ShockExplo_A10 FILE=Textures\ShockExplo\TGREEN_ShockExplo.asmdex_a10.PCX LODSET=2
 #exec TEXTURE IMPORT NAME=TGREEN_ShockExplo_A11 FILE=Textures\ShockExplo\TGREEN_ShockExplo.asmdex_a11.PCX LODSET=2
 
-
-var bool 	bTeamColor;
 var int 	iTeamIdx;
-
-replication
-{
-	reliable if(Role == ROLE_Authority)
-		bTeamColor,iTeamIdx;
-}
+var bool 	bTeamColor;
 
 simulated function PostBeginPlay()
 {
-	log("NN_ComboShock_ShockExplo !!!!!!!!!");
 	Super.PostBeginPlay();
 	setTimer(0.025,False);
 }
 
-simulated function Timer()
-{
-		//log("TIMERRR");
-	if(bTeamColor)
-	{
-		log("SETTT COLOURRR");
-		switch(iTeamIdx)
-		{
+
+function applyTeamColor() {
+	if (bTeamColor) {
+		switch(iTeamIdx) {
 			case 0:
 				Texture=Texture'TRED_ShockExplo_A00';
 				break;
@@ -90,8 +78,17 @@ simulated function Timer()
 				Texture=Texture'TGREEN_ShockExplo_A00';
 				break;
 			default:
-				Texture=None;
+				Texture=Texture'Botpack.ShockExplo.asmdex_a00';
 				break;
 		}
 	}
+	else {
+		Texture=Texture'Botpack.ShockExplo.asmdex_a00';
+	}
 }
+
+simulated function Timer()
+{
+	applyTeamColor();
+}
+

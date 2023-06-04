@@ -6,6 +6,7 @@ class NN_ComboShock_UT_RingExplosion extends NN_UT_RingExplosion;
 #exec TEXTURE IMPORT NAME=TGREEN_RING FILE=Textures\ShockProj\TGREEN_RING.PCX LODSET=2
 
 var bool 	PostSpawnEffect;
+var bool 	bTeamColor;
 var int 	iTeamIdx;
 
 
@@ -15,38 +16,21 @@ replication
 		iTeamIdx;
 }
 
-simulated function PostBeginPlay()
-{
+simulated function PostBeginPlay() {
 	Super.PostBeginPlay();
 	SetTimer(0.025, True);
-	
-	log("NN_ComboShock_UT_RingExplosion -> PostBeginPlay()");
-	log(Owner);
-	//log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
 }
 
-/*
-simulated function SpawnEffects()
-{
+
+simulated function SpawnEffects() {
 	// Delay real SpawnEffects to let replication set bTeamColor/iTeamIdx
 	PostSpawnEffect = True;
-	
-	log("NN_ComboShock_UT_RingExplosion -> SpawnEffects()");
-	log("bTeamColor:"@bTeamColor);
-	log("iTeamIdx:"@iTeamIdx);
 }
-*/
+
 	
-simulated function Timer()
-{
-	//local NN_ComboShock_ShockExplo A;
+simulated function Timer() {
+	local NN_ComboShock_ShockExplo A;
 	local bbPlayer bbP;
-	
-	log("NN_ComboShock_UT_RingExplosion -> Timer()");
-	log(Owner);
-	//log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
 	
 	if(Owner!=None) {
 		bbP = bbPlayer(Owner);
@@ -57,25 +41,21 @@ simulated function Timer()
 		}
 	}
 
-	/*
-	if(PostSpawnEffect)
-	{
+	if(PostSpawnEffect) {
 		A = NN_ComboShock_ShockExplo(Spawn(ClsNN_ShockExplo));
 		A.RemoteRole = ROLE_None;
-		A.bTeamColor = bTeamColor;
 		A.iTeamIdx = iTeamIdx;
+		A.bTeamColor = bTeamColor;
 		PostSpawnEffect=False;
-	}*/
+	}
 }
 
 simulated function bool applyTeamColor(bbPlayer bbP) {
-	log("NN_ComboShockProj->applyTeamColor()");
-	log("bTeamColoredShockRifle:"@bbP.Settings.bTeamColoredShockRifle);
 	if(Pawn(Owner).PlayerReplicationInfo==None)
 		return False;
 	
 	if (bbP.Settings.bTeamColoredShockRifle) {
-		//bTeamColor=True;
+		bTeamColor=True;
 		switch(iTeamIdx) {
 			case 0:
 				MultiSkins[0]=Texture'TRED_RING';
