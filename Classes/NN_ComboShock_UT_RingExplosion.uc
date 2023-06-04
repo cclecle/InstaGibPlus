@@ -76,7 +76,6 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 	}
 	else {
 		MultiSkins[0]=None;
-		log("NORMAL2");
 	}
 	
 	return True;

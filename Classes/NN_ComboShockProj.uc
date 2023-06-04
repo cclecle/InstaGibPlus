@@ -22,7 +22,6 @@ class NN_ComboShockProj extends NN_ShockProj;
 
 simulated function PostBeginPlay()
 {
-	log("NN_ComboShockProj->PostBeginPlay()");
 	Super.PostBeginPlay();
 	setTimer(0.025,True);
 }
@@ -30,7 +29,6 @@ simulated function PostBeginPlay()
 simulated function Timer()
 {
 	local bbPlayer bbP;
-	log("NN_ComboShockProj->Timer()");
 
 	if(Owner!=None) {
 		bbP = bbPlayer(Owner);
@@ -43,7 +41,6 @@ simulated function Timer()
 }
 
 simulated function bool applyTeamColor(bbPlayer bbP) {
-	log("NN_ComboShockProj->applyTeamColor()");
 	if(Pawn(Owner).PlayerReplicationInfo==None)
 		return False;
 	
@@ -51,11 +48,9 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 		switch(Pawn(Owner).PlayerReplicationInfo.Team) {
 			case 0:
 				Texture=Texture'ASMDAlt_TRED_a00';
-				log("RED");
 				break;
 			case 1:
 				Texture=Texture'ASMDAlt_TBLUE_a00';
-				log("BLUE");
 				break;
 			case 2:
 				Texture=Texture'ASMDAlt_TGREEN_a00';
@@ -65,13 +60,11 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 				break;
 			default:
 				Texture=Texture'Botpack.ASMDAlt.ASMDAlt_a00';
-				log("NORMAL");
 				break;
 		}
 	}
 	else {
 		Texture=Texture'Botpack.ASMDAlt.ASMDAlt_a00';
-		log("NORMAL2");
 	}
 	
 	return True;

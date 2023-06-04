@@ -210,13 +210,6 @@ simulated function bool ClientAltFire(float Value) {
 	local bbPlayer bbP;
 	local bool Result;
 
-
-	log("");
-	log("NN_ComboShockRifle->ClientAltFire()");
-	log("Owner:"@Owner);
-	log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
-	
 	if (Owner.IsA('Bot'))
 		return Super.ClientAltFire(Value);
 
@@ -263,12 +256,6 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	local Projectile Proj;
 	local NN_ComboShockProj ST_Proj;
 	
-	log("");
-	log("NN_ComboShockRifle->ProjectileFire()");
-	log("Owner:"@Owner);
-	log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
-	
 	if (Owner.IsA('Bot'))
 		return Super.ProjectileFire(ProjClass, ProjSpeed, bWarn);
 
@@ -306,12 +293,6 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	local NN_ComboShockProj ST_Proj;
 	local int ProjIndex;
 	local bbPlayer bbP;
-	
-	log("");
-	log("NN_ComboShockRifle->NN_ProjectileFire()");
-	log("Owner:"@Owner);
-	log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
 	
 	if (Owner.IsA('Bot'))
 		return None;
@@ -380,13 +361,6 @@ function AltFire( float Value )
 	local bbPlayer bbP;
 	local NN_ShockProjOwnerHidden NNSP;
 
-
-	log("");
-	log("NN_ComboShockRifle->AltFire()");
-	log("Owner:"@Owner);
-	log("bTeamColor:"@bTeamColor);
-	//log("iTeamIdx:"@iTeamIdx);
-
 	if (Owner.IsA('Bot'))
 	{
 		Super.AltFire(Value);
@@ -413,46 +387,38 @@ function AltFire( float Value )
 			return;
 		}
 	}
-	if ( AmmoType != None && AmmoType.UseAmmo(1) )
+
+	GotoState('AltFiring');
+	bCanClientFire = true;
+	if ( Owner.IsA('Bot') )
 	{
-		GotoState('AltFiring');
-		bCanClientFire = true;
-		if ( Owner.IsA('Bot') )
+		if ( Owner.IsInState('TacticalMove') && (Owner.Target == Pawn(Owner).Enemy)
+		 && (Owner.Physics == PHYS_Walking) && !Bot(Owner).bNovice
+		 && (FRand() * 6 < Pawn(Owner).Skill) )
+			Pawn(Owner).SpecialFire();
+	}
+	bPointing=True;
+	ClientAltFire(value);
+	if (bNewNet)
+	{
+		NNSP = NN_ShockProjOwnerHidden(ProjectileFire(AltProjectileHiddenClass, AltProjectileSpeed, bAltWarnTarget));
+		if (NNSP != None)
 		{
-			if ( Owner.IsInState('TacticalMove') && (Owner.Target == Pawn(Owner).Enemy)
-			 && (Owner.Physics == PHYS_Walking) && !Bot(Owner).bNovice
-			 && (FRand() * 6 < Pawn(Owner).Skill) )
-				Pawn(Owner).SpecialFire();
-		}
-		bPointing=True;
-		ClientAltFire(value);
-		if (bNewNet)
-		{
-			NNSP = NN_ShockProjOwnerHidden(ProjectileFire(AltProjectileHiddenClass, AltProjectileSpeed, bAltWarnTarget));
-			if (NNSP != None)
-			{
-				NNSP.NN_OwnerPing = float(Owner.ConsoleCommand("GETPING"));
-				if (bbP != None)
-					NNSP.zzNN_ProjIndex = bbP.xxNN_AddProj(NNSP);
-			}
-		}
-		else
-		{
-			Pawn(Owner).PlayRecoil(FiringSpeed);
-			ProjectileFire(AltProjectileClass, AltProjectileSpeed, bAltWarnTarget);
+			NNSP.NN_OwnerPing = float(Owner.ConsoleCommand("GETPING"));
+			if (bbP != None)
+				NNSP.zzNN_ProjIndex = bbP.xxNN_AddProj(NNSP);
 		}
 	}
+	else
+	{
+		Pawn(Owner).PlayRecoil(FiringSpeed);
+		ProjectileFire(AltProjectileClass, AltProjectileSpeed, bAltWarnTarget);
+	}
+
 }
 
 state ClientFiring
 {
-	simulated function bool ClientFire(float Value) {
-		if (Owner.IsA('Bot'))
-			return Super.ClientFire(Value);
-
-		return false;
-	}
-
 	simulated function bool ClientAltFire(float Value) {
 		if (Owner.IsA('Bot'))
 			return Super.ClientAltFire(Value);
@@ -484,51 +450,6 @@ state ClientAltFiring
 		if (O != none)
 			O.ClientDebugMessage("SSR AnimEnd"@O.ViewRotation.Yaw@O.ViewRotation.Pitch);
 		super.AnimEnd();
-	}
-}
-
-State ClientActive
-{
-	simulated function bool ClientFire(float Value)
-	{
-		if (Owner.IsA('Bot'))
-			return Super.ClientFire(Value);
-		bForceFire = bbPlayer(Owner) == None || !bbPlayer(Owner).ClientCannotShoot();
-		return bForceFire;
-	}
-
-	simulated function bool ClientAltFire(float Value)
-	{
-		if (Owner.IsA('Bot'))
-			return Super.ClientAltFire(Value);
-		bForceAltFire = bbPlayer(Owner) == None || !bbPlayer(Owner).ClientCannotShoot();
-		return bForceAltFire;
-	}
-
-	simulated function AnimEnd()
-	{
-		if ( Owner == None )
-		{
-			Global.AnimEnd();
-			GotoState('');
-		}
-		else if ( Owner.IsA('TournamentPlayer')
-			&& (TournamentPlayer(Owner).PendingWeapon != None || TournamentPlayer(Owner).ClientPending != None) )
-			GotoState('ClientDown');
-		else if ( bWeaponUp )
-		{
-			if ( (bForceFire || (PlayerPawn(Owner).bFire != 0)) && Global.ClientFire(1) )
-				return;
-			else if ( (bForceAltFire || (PlayerPawn(Owner).bAltFire != 0)) && Global.ClientAltFire(1) )
-				return;
-			PlayIdleAnim();
-			GotoState('');
-		}
-		else
-		{
-			PlayPostSelect();
-			bWeaponUp = true;
-		}
 	}
 }
 
@@ -826,10 +747,6 @@ state NormalFire
 		if (F > 0 && bbPlayer(Owner) != None)
 			Global.Fire(F);
 	}
-}
-
-state AltFiring
-{
 	function AltFire(float F)
 	{
 		if (Owner.IsA('Bot'))
@@ -839,6 +756,75 @@ state AltFiring
 		}
 		if (F > 0 && bbPlayer(Owner) != None)
 			Global.AltFire(F);
+	}
+}
+
+state AltFiring
+{
+	function Fire(float F)
+	{
+		if (Owner.IsA('Bot'))
+		{
+			Super.Fire(F);
+			return;
+		}
+		if (F > 0 && bbPlayer(Owner) != None)
+			Global.Fire(F);
+	}
+	function AltFire(float F)
+	{
+		if (Owner.IsA('Bot'))
+		{
+			Super.AltFire(F);
+			return;
+		}
+		if (F > 0 && bbPlayer(Owner) != None)
+			Global.AltFire(F);
+	}
+}
+
+State ClientActive
+{
+	simulated function bool ClientFire(float Value)
+	{
+		if (Owner.IsA('Bot'))
+			return Super.ClientFire(Value);
+		bForceFire = bbPlayer(Owner) == None || !bbPlayer(Owner).ClientCannotShoot();
+		return bForceFire;
+	}
+
+	simulated function bool ClientAltFire(float Value)
+	{
+		if (Owner.IsA('Bot'))
+			return Super.ClientAltFire(Value);
+		bForceAltFire = bbPlayer(Owner) == None || !bbPlayer(Owner).ClientCannotShoot();
+		return bForceAltFire;
+	}
+
+	simulated function AnimEnd()
+	{
+		if ( Owner == None )
+		{
+			Global.AnimEnd();
+			GotoState('');
+		}
+		else if ( Owner.IsA('TournamentPlayer')
+			&& (TournamentPlayer(Owner).PendingWeapon != None || TournamentPlayer(Owner).ClientPending != None) )
+			GotoState('ClientDown');
+		else if ( bWeaponUp )
+		{
+			if ( (bForceFire || (PlayerPawn(Owner).bFire != 0)) && Global.ClientFire(1) )
+				return;
+			else if ( (bForceAltFire || (PlayerPawn(Owner).bAltFire != 0)) && Global.ClientAltFire(1) )
+				return;
+			PlayIdleAnim();
+			GotoState('');
+		}
+		else
+		{
+			PlayPostSelect();
+			bWeaponUp = true;
+		}
 	}
 }
 
