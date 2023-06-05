@@ -227,8 +227,8 @@ simulated function bool CheckClientCanAltFire() {
 	local int		NbFoundShockProj;
 	local ShockProj FirstFoundProj,Proj;
 	
-	if(	(GetWeaponSettings().CGShock_iAntiSpamMethod==0) 
-		|| (GetWeaponSettings().CGShock_iMaxShock <= 0))
+	if(	(GetWeaponSettings().ShockProjectileAntiSpamMode ==0) 
+		|| (GetWeaponSettings().ShockProjectileMax <= 0))
 		return True;
 	
 	if (RemoteRole == ROLE_Authority) {
@@ -255,15 +255,15 @@ simulated function bool CheckClientCanAltFire() {
 		}
 	}
 
-	if(GetWeaponSettings().CGShock_iAntiSpamMethod==1) {
-		if((NbFoundShockProj >= GetWeaponSettings().CGShock_iMaxShock) 
+	if(GetWeaponSettings().ShockProjectileAntiSpamMode ==1) {
+		if((NbFoundShockProj >= GetWeaponSettings().ShockProjectileMax) 
 			&& (FirstFoundProj!=None)) {
 			FirstFoundProj.Destroy();
 		}
 		return True;
 	}
-	else if(GetWeaponSettings().CGShock_iAntiSpamMethod==2) {
-		return (NbFoundShockProj < GetWeaponSettings().CGShock_iMaxShock);
+	else if(GetWeaponSettings().ShockProjectileAntiSpamMode ==2) {
+		return (NbFoundShockProj < GetWeaponSettings().ShockProjectileMax);
 	}
 	else
 		return True;

@@ -71,8 +71,8 @@ var float ShockComboDamage;
 var float ShockComboMomentum;
 var float ShockComboHurtRadius;
 
-var int CGShock_iAntiSpamMethod;
-var int CGShock_iMaxShock;
+var int ShockProjectileAntiSpamMode;
+var int ShockProjectileMax;
 
 var float BioSelectTime;
 var float BioDownTime;
@@ -188,8 +188,8 @@ replication {
 		ShockComboMomentum,
 		ShockComboHurtRadius,
 
-		CGShock_iAntiSpamMethod,
-		CGShock_iMaxShock,
+		ShockProjectileAntiSpamMode,
+		ShockProjectileMax,
 
 		BioSelectTime,
 		BioDownTime,
@@ -497,8 +497,8 @@ function InitFromWeaponSettings(WeaponSettings S) {
 	ShockComboMomentum = S.ShockComboMomentum;
 	ShockComboHurtRadius = S.ShockComboHurtRadius;
 	
-	CGShock_iAntiSpamMethod = S.CGShock_iAntiSpamMethod;
-	CGShock_iMaxShock = S.CGShock_iMaxShock;
+	ShockProjectileAntiSpamMode  = S.ShockProjectileAntiSpamMode;
+	ShockProjectileMax = S.ShockProjectileMax;
 	
 	BioSelectTime = S.BioSelectTime;
 	BioDownTime = S.BioDownTime;
@@ -651,8 +651,8 @@ defaultproperties
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
 
-	CGShock_iAntiSpamMethod=0
-	CGShock_iMaxShock=0
+	ShockProjectileAntiSpamMode=0
+	ShockProjectileMax=0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333

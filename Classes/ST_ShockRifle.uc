@@ -38,6 +38,48 @@ function PostBeginPlay()
 		break;		// Find master :D
 }
 
+simulated function bool CheckClientCanAltFire() {
+	local int		NbFoundShockProj;
+	local ShockProj FirstFoundProj,Proj;
+	
+	if(	(GetWeaponSettings().ShockProjectileAntiSpamMode ==0) 
+		|| (GetWeaponSettings().ShockProjectileMax <= 0))
+		return True;
+	
+	foreach AllActors(Class'ShockProj', Proj) {
+		if(Proj.Instigator == Pawn(Owner))
+		{
+			if(FirstFoundProj==None) {
+				FirstFoundProj=Proj;
+			}
+			NbFoundShockProj++;
+		}
+	}
+		
+	if(GetWeaponSettings().ShockProjectileAntiSpamMode ==1) {
+		if((NbFoundShockProj >= GetWeaponSettings().ShockProjectileMax) 
+			&& (FirstFoundProj!=None)) {
+			FirstFoundProj.Destroy();
+		}
+		return True;
+	}
+	else if(GetWeaponSettings().ShockProjectileAntiSpamMode ==2) {
+		return (NbFoundShockProj < GetWeaponSettings().ShockProjectileMax);
+	}
+	else
+		return True;
+	
+	return True;
+}
+
+simulated function bool ClientAltFire( float Value )
+{
+	if(CheckClientCanAltFire()) {
+		return super.ClientAltFire(Value);
+	}
+	return False;
+}
+
 function AltFire( float Value )
 {
 	if (Owner == None)

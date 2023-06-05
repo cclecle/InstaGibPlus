@@ -85,8 +85,8 @@ var config float ShockComboDamage;
 var config float ShockComboMomentum;
 var config float ShockComboHurtRadius;
 
-var config int CGShock_iAntiSpamMethod;
-var config int CGShock_iMaxShock;
+var config int ShockProjectileAntiSpamMode;
+var config int ShockProjectileMax;
 
 var config float BioSelectTime;
 var config float BioDownTime;
@@ -215,8 +215,8 @@ defaultproperties
 	ShockComboHurtRadius=250
 	ShockComboMomentum=1.0
 	
-	CGShock_iAntiSpamMethod=0
-	CGShock_iMaxShock=0
+	ShockProjectileAntiSpamMode=0
+	ShockProjectileMax=0
 
 	BioSelectTime=0.488889
 	BioDownTime=0.333333
