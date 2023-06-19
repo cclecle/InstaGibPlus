@@ -112,12 +112,12 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 
 	if (bbP != None && bbP.bNewNet) {
 		if (Level.NetMode == NM_Client && !IsA('NN_CGShock_ProjOwnerHidden')) {
-			bbP.NN_HurtRadius(self, class'ShockRifle', Damage*DamageMultiplierExplode, 70, MyDamageType, MomentumTransfer, Location, zzNN_ProjIndex );
+			bbP.NN_HurtRadius(self, class'ShockRifle', Damage*DamageMultiplierExplode, 70, 'ShockCombo', MomentumTransfer, Location, zzNN_ProjIndex );
 			bbP.xxNN_RemoveProj(zzNN_ProjIndex, HitLocation, HitNormal);
 		}
 	}
 	else {
-		HurtRadius(Damage*DamageMultiplierExplode, 70, MyDamageType, MomentumTransfer, Location );
+		HurtRadius(Damage*DamageMultiplierExplode, 70, 'ShockCombo', MomentumTransfer, Location );
 	} 
 	NN_Momentum( 70, MomentumTransfer, Location );
 
@@ -135,7 +135,7 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 
 defaultproperties
 {
-	DamageMultiplierExplode=1000
-	DamageMultiplierSuperExplode=3000
-	DamageMultiplierSuperDuperExplode=9000
+	DamageMultiplierExplode=10
+	DamageMultiplierSuperExplode=30
+	DamageMultiplierSuperDuperExplode=90
 }

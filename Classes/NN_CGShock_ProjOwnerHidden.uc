@@ -121,7 +121,7 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 
 defaultproperties
 {
-	DamageMultiplierExplode=1000
-	DamageMultiplierSuperExplode=3000
-	DamageMultiplierSuperDuperExplode=9000
+	DamageMultiplierExplode=10
+	DamageMultiplierSuperExplode=30
+	DamageMultiplierSuperDuperExplode=90
 }
