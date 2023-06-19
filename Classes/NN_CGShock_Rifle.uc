@@ -284,7 +284,7 @@ simulated function bool ClientAltFire(float Value) {
 	bbP = bbPlayer(Owner);
 	if (Role < ROLE_Authority && bbP != None && bNewNet)
 	{
-		if (bbP.ClientCannotShoot() || bbP.Weapon != Self || Level.TimeSeconds - LastFiredTime < 0.4) {
+		if (bbP.ClientCannotShoot() || (bbP.Weapon != Self) || ((Level.TimeSeconds - LastFiredTime) < 0.4)) {
 			class'NN_WeaponFunctions'.static.IGPlus_AfterClientAltFire(self);
 			return false;
 		}
@@ -295,7 +295,7 @@ simulated function bool ClientAltFire(float Value) {
 			GotoState('AltFiring');
 			bCanClientFire = true;
 			Pawn(Owner).PlayRecoil(FiringSpeed);
-			bPointing=True;
+			bPointing = True;
 			NN_ProjectileFire(AltProjectileClass, AltProjectileSpeed, bAltWarnTarget);
 			LastFiredTime = Level.TimeSeconds;
 		}
@@ -332,6 +332,11 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	
 	Owner.MakeNoise(Pawn(Owner).SoundDampening);
 
+	if((Level.TimeSeconds - LastFiredTime) < 0.4)
+	{
+		return none;
+	}
+	
 	GetAxes(bbP.zzNN_ViewRot,X,Y,Z);
 	if (Mover(bbP.Base) == None)
 		Start = bbP.zzNN_ClientLoc + CalcDrawOffset() + FireOffset.X * X + FireOffset.Y * Y + FireOffset.Z * Z; 
@@ -345,6 +350,8 @@ function Projectile ProjectileFire(class<projectile> ProjClass, float ProjSpeed,
 	
 	Proj = Spawn(ProjClass,Owner,, Start,AdjustedAim);
 	ST_Proj = NN_CGShock_Proj(Proj);
+	
+	LastFiredTime = Level.TimeSeconds;
 	
 	return Proj;
 }
@@ -366,11 +373,18 @@ simulated function Projectile NN_ProjectileFire(class<projectile> ProjClass, flo
 	bbP = bbPlayer(Owner);
 	if (bbP == None)
 		return None;
+	
+	if((Level.TimeSeconds - LastFiredTime) < 0.4)
+	{
+		return none;
+	}
 
 	GetAxes(bbP.ViewRotation,X,Y,Z);
 	Start = Owner.Location + CDO + FireOffset.X * X + yMod * Y + FireOffset.Z * Z;
 	if ( PlayerOwner != None )
 		PlayerOwner.ClientInstantFlash( -0.4, vect(450, 190, 650));
+	
+	LastFiredTime = Level.TimeSeconds;
 	
 	Proj = Spawn(ProjClass,Owner,, Start,bbP.ViewRotation);
 	Proj.RemoteRole = ROLE_None;
@@ -411,7 +425,7 @@ function Fire( float Value )
 simulated function PlayFiring()
 {
 	PlayOwnedSound(FireSound, SLOT_None, Pawn(Owner).SoundDampening*4.0);
-	PlayAnim('Fire1', 0.2 + 0.2 * FireAdjust,0.05);
+	PlayAnim('Fire1', 0.3 + 0.3 * FireAdjust,0.05);
 }
 
 simulated function PlayAltFiring()
@@ -600,9 +614,9 @@ simulated function bool NN_ProcessTraceHit(Actor Other, Vector HitLocation, Vect
 			HitLocation,
 			HitOffset,
 			HitNormal);
+			
+		class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, ST_MyDamageType);
 	}
-
-	class'bbPlayerStatics'.static.PlayClientHitResponse(Pawn(Owner), Other, HitDamage, ST_MyDamageType);
 
 	return zzbNN_Combo;
 }
