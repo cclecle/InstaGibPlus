@@ -33,8 +33,7 @@ simulated function Timer() {
 	local NN_CGShock_ShockExplo A;
 	local bbPlayer bbP;
 	
-	if ( Level.NetMode != NM_DedicatedServer )
-	{
+	if ( Level.NetMode != NM_DedicatedServer ) {
 		if(Owner!=None) {
 			bbP = bbPlayer(Owner);
 			if (bbP!=None) {
@@ -99,5 +98,5 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 
 defaultproperties
 {
-	ClsNN_ShockExplo=class'NN_CGShock_ShockExplo'
+ClsNN_ShockExplo=class'NN_CGShock_ShockExplo'
 }

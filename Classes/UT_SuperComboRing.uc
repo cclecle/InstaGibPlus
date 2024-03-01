@@ -22,5 +22,5 @@ simulated function SpawnEffects()
 
 defaultproperties
 {
-     DrawScale=12.000000
+DrawScale=12.000000
 }

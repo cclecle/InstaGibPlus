@@ -20,15 +20,16 @@ class NN_CGShock_Proj extends NN_ShockProj;
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a02 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a02.pcx
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a03 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a03.pcx
 
-simulated function PostBeginPlay()
-{
+simulated function PostBeginPlay() {
 	Super.PostBeginPlay();
 	if ( Level.NetMode != NM_DedicatedServer )
 		setTimer(0.025,True);
+	log("Spawned NN_CGShock_Proj"@MyDamageType);
+	log("bOnlyOwnerSee:"@bOnlyOwnerSee);
+	log("bOwnerNoSee:"@bOwnerNoSee);
 }
 
-simulated function Destroyed()
-{
+simulated function Destroyed() {
 	local bbPlayer bbP;
 
 	if (Level.NetMode == NM_Client)
@@ -40,8 +41,7 @@ simulated function Destroyed()
 	}
 }
 
-simulated function Timer()
-{
+simulated function Timer() {
 	local bbPlayer bbP;
 
 	if ( Level.NetMode != NM_DedicatedServer )
@@ -100,8 +100,7 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 }
 
 
-simulated function Explode(vector HitLocation, vector HitNormal)
-{
+simulated function Explode(vector HitLocation, vector HitNormal) {
 	local bbPlayer bbP;
 	local NN_CGShock_UT_RingExplosion instRingExpl;
 
@@ -112,18 +111,18 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 
 	if (bbP != None && bbP.bNewNet) {
 		if (Level.NetMode == NM_Client && !IsA('NN_CGShock_ProjOwnerHidden')) {
-			bbP.NN_HurtRadius(self, class'ShockRifle', Damage*DamageMultiplierExplode, 70, 'ShockCombo', MomentumTransfer, Location, zzNN_ProjIndex );
+			bbP.NN_HurtRadius(self, class'ShockRifle', Damage, 70, MyDamageType, MomentumTransfer, Location, zzNN_ProjIndex );
 			bbP.xxNN_RemoveProj(zzNN_ProjIndex, HitLocation, HitNormal);
 		}
 	}
 	else {
-		HurtRadius(Damage*DamageMultiplierExplode, 70, 'ShockCombo', MomentumTransfer, Location );
+		HurtRadius(Damage, 70, MyDamageType, MomentumTransfer, Location );
 	} 
 	NN_Momentum( 70, MomentumTransfer, Location );
 
-	instRingExpl=Spawn(class'NN_CGShock_UT_RingExplosion',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
+	instRingExpl = Spawn(class'NN_CGShock_UT_RingExplosion',Owner,, HitLocation+HitNormal*8,rotator(HitNormal));
 	instRingExpl.RemoteRole = ROLE_None;
-	instRingExpl.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
+	instRingExpl.iTeamIdx = Pawn(Owner).PlayerReplicationInfo.Team;
 	
 	if (bbP != None)
 		bbP.xxClientDemoFix(None, class'NN_CGShock_UT_RingExplosion',HitLocation+HitNormal*8,,, rotator(HitNormal));
@@ -135,7 +134,5 @@ simulated function Explode(vector HitLocation, vector HitNormal)
 
 defaultproperties
 {
-	DamageMultiplierExplode=10
-	DamageMultiplierSuperExplode=30
-	DamageMultiplierSuperDuperExplode=90
+Damage=700
 }

@@ -20,15 +20,17 @@ class NN_CGShock_ProjOwnerHidden extends NN_ShockProjOwnerHidden;
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a02 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a02.pcx
 #exec TEXTURE IMPORT NAME=ASMDAlt_TGOLD_a03 FILE=Textures\ShockProj\ASMDAlt_TGOLD_a03.pcx
 
-simulated function PostBeginPlay()
-{
+simulated function PostBeginPlay() {
 	Super.PostBeginPlay();
 	if ( Level.NetMode != NM_DedicatedServer )
 		setTimer(0.025,True);
+		
+	log("Spawned NN_CGShock_ProjOwnerHidden"@MyDamageType);
+	log("bOnlyOwnerSee:"@bOnlyOwnerSee);
+	log("bOwnerNoSee:"@bOwnerNoSee);
 }
 
-simulated function Destroyed()
-{
+simulated function Destroyed() {
 	local bbPlayer bbP;
 
 	if (Level.NetMode == NM_Client)
@@ -40,8 +42,7 @@ simulated function Destroyed()
 	}
 }
 
-simulated function Timer()
-{
+simulated function Timer() {
 	local bbPlayer bbP;
 
 	if ( Level.NetMode != NM_DedicatedServer )
@@ -100,20 +101,21 @@ simulated function bool applyTeamColor(bbPlayer bbP) {
 }
 
 
-simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
-{
+simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal) {
 	local PlayerPawn P;
 	local NN_CGShock_UT_RingExplosion instRingExpl;
-
+	log("????????");
 	if (RemoteRole < ROLE_Authority) {
 		ForEach AllActors(class'PlayerPawn', P) {
-			if(MessagingSpectator(P)!=None) continue;
+			//if(MessagingSpectator(P)!=None) continue;
 			if(!P.bIsPlayer) continue;
 			
 			if (P != Instigator) {
 				instRingExpl = P.Spawn(class'NN_CGShock_UT_RingExplosion',P,, HitLocation+HitNormal*8,rotator(HitNormal));
 				instRingExpl.bOnlyOwnerSee  = True;
 				instRingExpl.iTeamIdx 	= Pawn(Owner).PlayerReplicationInfo.Team;
+				log(instRingExpl);
+				log(instRingExpl.bOnlyOwnerSee);
 			}
 		}
 	}
@@ -121,7 +123,5 @@ simulated function DoExplode(int Dmg, vector HitLocation,vector HitNormal)
 
 defaultproperties
 {
-	DamageMultiplierExplode=10
-	DamageMultiplierSuperExplode=30
-	DamageMultiplierSuperDuperExplode=90
+Damage=700
 }

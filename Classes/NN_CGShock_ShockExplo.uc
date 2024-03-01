@@ -110,23 +110,18 @@ function applyTeamColor() {
 
 simulated function Timer()
 {
-	if ( Level.NetMode != NM_DedicatedServer )
-	{
+	if ( Level.NetMode != NM_DedicatedServer ) {
 		if(!bTeamColorApplied) {
 			applyTeamColor();
 			bTeamColorApplied=True;
 		}
-		
-		if( dAnnimTime < LifeSpan/2)
-		{
+		if( dAnnimTime < LifeSpan/2) {
 			LightBrightness=dAnnimTime*2*dMaxLightBrightness/LifeSpan;
 		}
-		else if(dAnnimTime < LifeSpan)
-		{
+		else if(dAnnimTime < LifeSpan) {
 			LightBrightness=-(dAnnimTime-(LifeSpan/2))*2*dMaxLightBrightness/LifeSpan + 2*dMaxLightBrightness;
 		}
-		else
-		{
+		else {
 			LightBrightness=0;
 		}
 		dAnnimTime += dAnnimPeriod;
@@ -135,6 +130,6 @@ simulated function Timer()
 
 defaultproperties
 {
-	LightType=LT_Pulse
+LightType=LT_Pulse
 }
 
